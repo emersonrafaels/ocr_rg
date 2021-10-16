@@ -4,6 +4,8 @@ This repository is intended to perform Optical Character Recognition in a Brazil
 
 In this project, it is assumed that the input image may not be in the best perspective in order for this task to be performed. Therefore, some steps must be taken to preprocess the image, before applying OCR.
 
+This project is a fork of: https://github.com/gfluz94/RG_OCR/
+
 ### Dewarping
 
 1. Image is read in gray-scale;
