@@ -159,8 +159,14 @@ class Image_Pre_Processing(object):
 
         try:
             # REALIZANDO O RESIZE DA IMAGEM
+
+            # OBTENDO A RAZÃO ENTRE O VALOR DE LARGURA (DESEJADO) E ALTURA
             r = self.__width / img.shape[0]
+
+            # REDIMENSIONANDO A ALTURA, E SETANDO A LARGURA COM O VALOR DESEJADO
             dim = (int(img.shape[1] * r), self.__width)
+
+            # REALIZANDO O RESIZE DA IMAGEM COM AS NOVAS DIMENSÕES
             image_resize = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
             return image_resize
@@ -558,7 +564,7 @@ class Image_Pre_Processing(object):
                 img = cv2.pyrDown(img)
 
             # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
-            if img.shape[1] > 600:
+            if img.shape[1] > self.__width:
                 img = self._resize_image(img)
 
             # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM BLURRING
