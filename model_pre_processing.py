@@ -28,18 +28,31 @@ __data_atualizacao__ = "16/10/2021"
 from inspect import stack
 
 import cv2
-import numpy
+import numpy as np
+import imutils
+
+from utils.image_read import read_image_gray
 
 
 class Image_Pre_Processing(object):
 
-    def __init__(self, blur_ksize=5, threshold_value=195,
+    def __init__(self, blur_ksize=5, threshold_value=255,
                  dilation_ksize=5, output_size=600):
 
+        # 1 - DEFININDO O TAMANHO DO KERNEL GAUSSIANO PARA DESFOQUE
         self.__blur_ksize = blur_ksize
-        self.__dilation_ksize = dilation_ksize
-        self.__output_size = output_size
+
+        # 2 - DEFININDO O VALOR DE PIXEL QUE SERÁ USADO COMO LIMIAR
         self.__threshold_value = threshold_value
+
+        # 3 - DEFININDO O TAMANHO DO KERNEL GAUSSIANO PARA DILATAÇÃO
+        self.__dilation_ksize = dilation_ksize
+
+        # 4 - LARGURA PARA RESIZE DA IMAGEM
+        self.__width = 600
+
+        # 5 -
+        self.__output_size = output_size
 
 
     @property
@@ -58,26 +71,18 @@ class Image_Pre_Processing(object):
             A DETECÇÃO DE BORDAS, TÊM MELHOR DESEMPENHO SE A
             IMAGEM PRIMEIRO FOR SUAVIZADA OU DESFOCADA.
 
+            A PROPRIEDADE '__blur_ksize' É TAMANHO DO KERNEL GAUSSIANO [ALTURA LARGURA].
+            A ALTURA E A LARGURA DEVEM SER ÍMPARES E PODEM TER VALORES DIFERENTES.
+
             # Arguments
 
             # Returns
-                self.__blur_ksize        - Required : Propriedade, somente leitura, do blur (Integer)
+                self.__blur_ksize        - Required : Propriedade, somente leitura, do blur
+                                                      Define o tamanho do kernel gaussiano (Integer)
 
         """
 
         return self.__blur_ksize
-
-
-    @property
-    def dilation_ksize(self):
-
-        return self.__dilation_ksize
-
-
-    @property
-    def output_size(self):
-
-        return self.__output_size
 
 
     @property
@@ -111,6 +116,38 @@ class Image_Pre_Processing(object):
         return self.__threshold_value
 
 
+    @property
+    def dilation_ksize(self):
+
+        """
+
+
+            # Arguments
+
+            # Returns
+                self.dilation_ksize        - Required : Propriedade, somente leitura,
+                                                        do kernel de dilatação (Integer)
+
+        """
+
+        return self.__dilation_ksize
+
+
+    @property
+    def output_size(self):
+
+        return self.__output_size
+
+
+    def _resize_image(self, img):
+
+        # REALIZANDO O RESIZE DA IMAGEM
+        img_resized = imutils.resize(img, width=self.__width)
+
+        # RETORNANDO A IMAGEM APÓS O RESIZE
+        return img_resized
+
+
     def _smoothing_blurring(self, img):
 
         """
@@ -137,9 +174,22 @@ class Image_Pre_Processing(object):
 
         """
 
-        blur = cv2.GaussianBlur(img, (self.__blur_ksize, self.__blur_ksize), 0)
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
 
-        return blur
+        try:
+            blur = cv2.GaussianBlur(img, (self.__blur_ksize, self.__blur_ksize), 0)
+
+            print("OCR RG - TÉCNICA DE DESFOQUE GAUSSIANO APLICADO COM SUCESSO")
+
+            validator = True
+
+            return validator, blur
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, img
 
 
     def _threshold_image(self, img):
@@ -177,20 +227,33 @@ class Image_Pre_Processing(object):
 
         """
 
-        thresh = cv2.adaptiveThreshold(img, self.__threshold_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                       cv2.THRESH_BINARY_INV, 11, 1)
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
 
-        return thresh
+        try:
+            thresh = cv2.adaptiveThreshold(img, self.__threshold_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                           cv2.THRESH_BINARY_INV, 11, 1)
+
+            print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO")
+
+            validator = True
+
+            return validator, thresh
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, img
 
 
     def __preprocess_blur_threshold_img(self, img):
 
         """
 
-            REALIZA O PRÉ PROCESSAMENTO DA IMAGEM.
+            REALIZA A ORQUESTRAÇÃO DE DUAS TÉCNICAS DE PRÉ PROCESSAMENTO DA IMAGEM.
 
-            APLICA AS TÉCNICAS DE DESFOQUE (GAUSSIANBLUR)
-            E LIMIAR DOS PLANOS DA IMAGEM (ADAPTIVETHRESHOLD)
+            1) APLICA AS TÉCNICAS DE DESFOQUE (GAUSSIANBLUR)
+            2) APLICA LIMIAR DOS PLANOS DA IMAGEM (ADAPTIVETHRESHOLD)
 
             # Arguments
                 img                    - Required : Imagem para processamento (Array)
@@ -200,41 +263,218 @@ class Image_Pre_Processing(object):
 
         """
 
-        # REALIZANDO O DESFOQUE GAUSSIANO
-        blur = Image_Pre_Processing._smoothing_blurring(self, img)
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
 
-        # APLICANDO O LIMIAR PARA MELHOR SEPARAÇÃO DE PLANO PRINCIPAL E FUNDO
-        thresh = Image_Pre_Processing._threshold_image(self, blur)
+        print("OCR RG - INICIANDO O PRÉ PROCESSAMENTO DA IMAGEM")
 
-        return thresh
+        try:
+            # REALIZANDO O DESFOQUE GAUSSIANO
+            validator, blur = Image_Pre_Processing._smoothing_blurring(self, img)
+
+            if validator:
+
+                # APLICANDO O LIMIAR PARA MELHOR SEPARAÇÃO DE PLANO PRINCIPAL E FUNDO
+                validator, thresh = Image_Pre_Processing._threshold_image(self, blur)
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, thresh
 
 
-    def __get_contour(self, img):
+    def __get_max_contour(self, img):
 
-        contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        max_area = -np.inf
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if area > max_area:
-                max_area = area
-                roi = contour
-        return roi
+        """
+
+            REALIZA A OBTENÇÃO DO CONTORNO DE MAIOR ÁREA DA FIGURA.
+
+            O OBJETIVO É ENCONTRAR O MÁXIMO CONTORNO, PARA OBTER APENAS O DOCUMENTO DE IDENTIIFAÇÃO,
+            RETIRANDO POSSÍVEIS OUTROS OBJETOS OU
+            CASOS NO QUAL O DOCUMENTO POSSA ESTAR SCANEADO EM UMA FOLHA SULFITE.
+
+            1) OBTÉM TODOS OS CONTORNOS
+            2) APLICA LIMIAR DOS PLANOS DA IMAGEM (ADAPTIVETHRESHOLD)
+
+            # Arguments
+                img                    - Required : Imagem para processamento (Array)
+
+            # Returns
+                thresh                - Required : Imagem após ambos processamentos (Array)
+
+        """
+
+        # INICIANDO A VARIAVEL QUE ARMAZENARÁ O VALOR DE MÁXIMA ÁREA DE CONTORNO
+        roi = max_area = 0
+
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
+
+        try:
+            # OBTENDO TODOS OS CONTORNOS
+            contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+            # PERCORRENDO TODOS OS CONTORNOS
+            for contour in contours:
+
+                # OBTENDO O TAMANHO DA ÁREA DO CONTORNO
+                area = cv2.contourArea(contour)
+
+                # VERIFICANDO SE O VALOR É MAIOR DO QUE ATUALMENTE É A MÁXIMA ÁREA
+                if area > max_area:
+
+                    # CASO VALOR ATUAL SEJA MAIOR QUE A MÁXIMA ÁREA, O VALOR DA MÁXIMA ÁREA É ATUALIZADO
+                    max_area = area
+
+                    # ROI ARMAZENA O CONTORNO
+                    roi = contour
+
+            validator = True
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, roi
+
+
+    def __crop_image_countour(self, img, contour):
+
+        """
+
+            REALIZA O CROP DA IMAGEM ORIGINAL COM BASE NO CONTORNO DE MÁXIMA ÁREA ENCONTRADO.
+
+            # Arguments
+                img                 - Required : Imagem para processamento (Array)
+                contour             - Required : Valor do contorno da imagem (Array)
+
+            # Returns
+                mask                - Required : Imagem com a máscara de contornos (Array)
+
+        """
+
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
+
+        try:
+            x, y = [], []
+
+            for contour_line in contour:
+                x.append(contour_line[0][0])
+                y.append(contour_line[0][1])
+
+            x1, x2, y1, y2 = min(x), max(x), min(y), max(y)
+
+            image_cropped_contour = img[y1:y2, x1:x2]
+
+            validator = True
+
+            return validator, image_cropped_contour
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, img
 
 
     def __generate_mask(self, img, contour):
 
-        mask = np.zeros(img.shape, dtype=np.uint8)
-        cv2.drawContours(mask, [contour], 0, 255, -1)
-        cv2.drawContours(mask, [contour], 0, 0, 2)
-        mask = cv2.dilate(mask, (self.__dilation_ksize, self.__dilation_ksize), iterations=10)
-        return mask
+        """
+
+            REALIZA A CRIAÇÃO DA MÁSCARA DE CONTORNO DA MÁXIMA ÁREA DE CONTORNO.
+
+            A TÉCNICA DE DILATAÇÃO É APLICADA PARA ACENTUAR A MÁSCARA.
+
+            # Arguments
+                img                 - Required : Imagem para processamento (Array)
+                contour             - Required : Valor do contorno da imagem (Array)
+
+            # Returns
+                mask                - Required : Imagem com a máscara de contornos (Array)
+
+        """
+
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
+
+        try:
+            # CRIA A MÁSCARA DO TAMANHO DA IMAGEM, COM TODOS OS VALORES 0 (PRETO)
+            mask = np.zeros(img.shape, dtype=np.uint8)
+
+            # mask: imagem utilizada
+            # contour: contorno a ser feito,
+            # nesse caso o resultado da função de máx area de contorno
+            # 0: o índice do contorno a ser utilizado
+            # 255: a cor do contorno
+            # -1: esperassura do contorno
+            cv2.drawContours(mask, [contour], 0, 255, -1)
+            cv2.drawContours(mask, [contour], 0, 0, 2)
+
+            # REALIZANDO A DILATAÇÃO PARA AUMENTAR A MÁSCARA DE CONTORNO
+            mask = cv2.dilate(mask, (self.__dilation_ksize, self.__dilation_ksize), iterations=10)
+
+            validator = True
+
+            return validator, mask
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, img
 
 
     def __find_corners(self, mask):
 
-        corners = cv2.goodFeaturesToTrack(mask, 4, 0.01, 10)
-        corners = np.int0(corners)
-        return np.float32(corners.reshape(-1,2))
+
+        """
+
+            OPENCV TEM UMA FUNÇÃO, CV2.GOODFEATURESTOTRACK ().
+            ELE ENCONTRA N CANTOS MAIS FORTES NA IMAGEM PELO MÉTODO SHI-TOMASI (OU DETECÇÃO DE CANTO HARRIS).
+            COMO DE COSTUME, A IMAGEM DEVE SER UMA IMAGEM EM TONS DE CINZA.
+
+            EM SEGUIDA, ESPECIFICA-SE O NÚMERO DE CANTOS QUE DESEJA ENCONTRAR (4).
+
+            EM SEGUIDA, ESPECIFICA-SE O NÍVEL DE QUALIDADE, QUE É UM VALOR ENTRE 0-1 (0.01)
+            QUE DENOTA A QUALIDADE MÍNIMA DE CANTO ABAIXO DA QUAL TODOS SÃO REJEITADOS.
+
+            EM SEGUIDA, FORNECE-SE A DISTÂNCIA EUCLIDIANA MÍNIMA ENTRE OS CANTOS DETECTADOS (10).
+
+            COM TODAS ESSAS INFORMAÇÕES, A FUNÇÃO ENCONTRA CANTOS NA IMAGEM.
+            TODOS OS CANTOS ABAIXO DO NÍVEL DE QUALIDADE SÃO REJEITADOS.
+            EM SEGUIDA, ELE CLASSIFICA OS CANTOS RESTANTES COM BASE NA QUALIDADE NA ORDEM DECRESCENTE.
+            ENTÃO, A FUNÇÃO PEGA O PRIMEIRO CANTO MAIS FORTE,
+            DESCARTA TODOS OS CANTOS PRÓXIMOS NA FAIXA DE DISTÂNCIA MÍNIMA E RETORNA N CANTOS MAIS FORTES.
+
+            # Arguments
+                mask                - Required : Imagem com a máscara de contornos (Array)
+
+            # Returns
+                validator           - Required : Validador de execução da função (Boolean)
+                result_corners      - Required : Resultado contendo a lista de cantos da imagem (Array)
+
+
+        """
+
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validator = False
+
+        try:
+            # OBTENDO OS CANTOS DA IMAGEM
+            corners = cv2.goodFeaturesToTrack(mask, 4, 0.01, 10)
+
+            # CONVERTENDO OS VALORES EM INT64
+            corners = np.int0(corners)
+
+            # CONVERTENDO OS VALORES DE CANTOS PARA FLOAT E REALIZANDO O RESHAPE
+            result_corners = np.float32(corners.reshape(-1, 2))
+
+            validator = True
+
+            return validator, result_corners
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return validator, None
 
 
     def __find_new_corners(self, v, high_value=600):
@@ -247,9 +487,10 @@ class Image_Pre_Processing(object):
         x_array = []
         for element in x:
             for i, sorted_element in enumerate(x_sorted):
-                if element==sorted_element:
+                if element == sorted_element:
                     x_array.append(i)
-        idx[:,0] = x_array
+        #idx[:,0] = x_array
+        idx[:, 0] = x_array[:4]
         idx[:,1] = y.argsort()
         return np.float32((idx>1)*high_value)
 
@@ -266,30 +507,61 @@ class Image_Pre_Processing(object):
             6) USANDO ESTA MÁSCARA, PODEMOS ENCONTRAR OS QUATRO CANTOS DO DOCUMENTO DE IDENTIFICAÇÃO NA IMAGEM ORIGINAL;
             7) PORTANTO, APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
 
+            img = image_crooped_contour = image_warped
+
+            # Arguments
+                img_path                  - Required : Caminho da imagem a ser lida (String)
+
+            # Returns
+                img                       - Required : Imagem lida em escala de cinza (Array)
+                image_cropped_contour     - Required : Imagem após aplicação
+                                                       do crop de contornos (Array)
+                image_warped              - Required : Imagem após aplicação
+                                                       da técnica de skew (Array)
+
 
         """
 
+        # INICIANDO AS VARIÁVEIS QUE SERÃO RETORNADAS
+        img = image_crooped_contour = image_warped = None
+
         # REALIZANDO A LEITURA DA IMAGEM EM ESCALA DE CINZA
-        img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+        img = read_image_gray(img_path)
 
-        while max(img.shape) > 2000:
-            img = cv2.pyrDown(img)
+        if not img is None:
 
-        # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM
-        preproc_img = self.__preprocess_blur_threshold_img(img)
+            while max(img.shape) > 2000:
+                img = cv2.pyrDown(img)
 
-        # ENCONTRAMOS O CONTORNO CUJA ÁREA É MAIOR, POIS REPRESENTA O QUADRO DO DOCUMENTO;
-        contour = self.__get_contour(preproc_img)
+            # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
+            if img.shape[1] > 600:
+                img = self._resize_image(img)
 
-        # COM O CONTORNO ENCONTRADO NA ÚLTIMA ETAPA, CRIAMOS UMA MÁSCARA COM A ÁREA REPRESENTADA PELA MOLDURA;
-        mask = self.__generate_mask(img, contour)
+            # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM BLURRING
+            validator, preproc_img = self.__preprocess_blur_threshold_img(img)
 
-        # USANDO ESTA MÁSCARA, PODEMOS ENCONTRAR OS QUATRO CANTOS DO DOCUMENTO DE IDENTIFICAÇÃO NA IMAGEM ORIGINAL;
-        pts1 = self.__find_corners(mask)
-        pts2 = self.__find_new_corners(pts1, high_value=self.__output_size)
+            if validator:
 
-        # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
-        M = cv2.getPerspectiveTransform(pts1, pts2)
-        dst = cv2.warpPerspective(img, M, (self.__output_size, self.__output_size))
+                # ENCONTRAMOS O CONTORNO CUJA ÁREA É MAIOR, POIS REPRESENTA O QUADRO DO DOCUMENTO;
+                validator, contour = self.__get_max_contour(preproc_img)
 
-        return dst
+                if validator:
+
+                    # COM O CONTORNO ENCONTRADO A ÚLTIMA ETAPA, REALIZAMOS O CROP DA IMAGEM
+                    validator, image_cropped_contour = self.__crop_image_countour(img, contour)
+
+                    # COM O CONTORNO ENCONTRADO NA ÚLTIMA ETAPA, CRIAMOS UMA MÁSCARA COM A ÁREA REPRESENTADA PELA MOLDURA;
+                    validator, mask = self.__generate_mask(img, contour)
+
+                    if validator:
+
+                        # USANDO ESTA MÁSCARA, PODEMOS ENCONTRAR OS QUATRO CANTOS DO DOCUMENTO DE IDENTIFICAÇÃO NA IMAGEM ORIGINAL;
+                        _, pts1 = self.__find_corners(mask)
+
+                        pts2 = self.__find_new_corners(pts1, high_value=self.__output_size)
+
+                        # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
+                        M = cv2.getPerspectiveTransform(pts1, pts2)
+                        image_warped = cv2.warpPerspective(img, M, (self.__output_size, self.__output_size))
+
+        return img, image_cropped_contour, image_warped

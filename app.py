@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, redirect
 from forms import AddImage, RGFields
 
-from ocr_rg import Image_Pre_Processing, RGReader
+from ocr_rg import Image_Pre_Processing, Execute_OCR_RG
 import cv2
 
 
@@ -22,7 +22,7 @@ def add_image():
 
         rg = form.rg.data
         dewarper = Image_Pre_Processing(blur_ksize=5, threshold_value=195, dilation_ksize=5, output_size=600)
-        rg_reader = RGReader(dewarper)
+        rg_reader = Execute_OCR_RG(dewarper)
         output_rg = rg_reader.execute_pipeline_ocr(rg)
         
         results.rg.data = output_rg["RG"]
