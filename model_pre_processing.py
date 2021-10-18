@@ -141,11 +141,32 @@ class Image_Pre_Processing(object):
 
     def _resize_image(self, img):
 
-        # REALIZANDO O RESIZE DA IMAGEM
-        img_resized = imutils.resize(img, width=self.__width)
+        """
 
-        # RETORNANDO A IMAGEM APÓS O RESIZE
-        return img_resized
+            FUNÇÃO RESPONSÁVEL POR REALIZAR O REDIMENSIONAMENTO DA IMAGEM.
+
+            É ESPERADO QUE AS IMAGENS ESTEJAM COM LARGURA/COMPRIMENTO, SEMELHANTES
+            AO DO VALOR 'self.__width'.
+
+            # Arguments
+                img                    - Required : Imagem para processamento (Array)
+
+            # Returns
+                image_resize           - Required : Imagem após processamento do resize (Array)
+
+        """
+
+
+        try:
+            # REALIZANDO O RESIZE DA IMAGEM
+            r = self.__width / img.shape[0]
+            dim = (int(img.shape[1] * r), self.__width)
+            image_resize = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+
+            return image_resize
+
+        except Exception as ex:
+            return img
 
 
     def _smoothing_blurring(self, img):
@@ -355,15 +376,18 @@ class Image_Pre_Processing(object):
         # INICIANDO O VALIDADOR DA FUNÇÃO
         validator = False
 
-        try:
-            x, y = [], []
+        # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO A LISTA DE CONTORNOS NA HORIZONTAL E VERTICAL
+        x, y = [], []
 
+        try:
             for contour_line in contour:
                 x.append(contour_line[0][0])
                 y.append(contour_line[0][1])
 
+            # OBTENDO OS VALORES MIN E MÁXIMO DE CADA EIXO
             x1, x2, y1, y2 = min(x), max(x), min(y), max(y)
 
+            # APLICANDO O CROP NA IMAGEM
             image_cropped_contour = img[y1:y2, x1:x2]
 
             validator = True

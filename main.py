@@ -31,7 +31,7 @@ from model_ocr import Execute_OCR_RG
 
 if __name__ == "__main__":
 
-    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
+    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\JaazielSousa.jpg'
 
     # DEFININDO A CLASSE DE PRÉ PROCESSAMENTO
     pre_processing = Image_Pre_Processing(blur_ksize=5, threshold_value=255, dilation_ksize=5, output_size=600)
