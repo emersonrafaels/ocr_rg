@@ -208,14 +208,15 @@ class Execute_OCR_RG(object):
             # APLICANDO O CROP
             roi = img[y1:y2, x1:x2]
 
-            # VISUALIZANDO O BOUNDING BOX
-            # image_view_functions.view_image(image_view_functions.create_bounding_box(img, bounding_positions))
-
-            # VISUALIZANDO O CROP
-            # image_view_functions.view_image(roi)
-
             # REALIZANDO O OCR
             info_extracted[field] = self.__tesseract.image_to_string(roi).strip()
+
+            # VISUALIZANDO O BOUNDING BOX
+            image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img,
+                                                                                                      bounding_positions))
+
+            # VISUALIZANDO O CROP
+            image_view_functions.view_image_with_coordinates(roi)
 
         return info_extracted
 

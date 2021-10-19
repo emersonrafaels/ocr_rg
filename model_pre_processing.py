@@ -172,6 +172,7 @@ class Image_Pre_Processing(object):
             return image_resize
 
         except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
             return img
 
 
