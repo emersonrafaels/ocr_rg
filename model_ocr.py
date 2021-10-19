@@ -32,6 +32,7 @@ from inspect import stack
 import re
 import warnings
 
+import cv2
 import pytesseract
 
 from utils.image_view import image_view_functions
@@ -234,6 +235,10 @@ class Execute_OCR_RG(object):
         image_view_functions.view_image(cropped_image, nome_janela="CROPPED")
         image_view_functions.view_image(warped_img, nome_janela="WARPED")
 
+        # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM CROPPED
+        cropped_image = cv2.resize(cropped_image, (600, 600),
+                                   interpolation=cv2.INTER_AREA)
+
         # APLICANDO O OCR
         info_extracted = self.__execute_ocr(warped_img)
 
@@ -245,6 +250,10 @@ class Execute_OCR_RG(object):
         for column in ["RG", "CPF"]:
             info_extracted[column] = self.__postprocess_num(info_extracted[column])
 
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS DATAS
+
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO ORIGEM
         info_extracted["CIDADE_ORIGEM"], info_extracted["UF_ORIGEM"] = self.__postprocess_location(info_extracted["CIDADE_ORIGEM"])
 
         return info_extracted
