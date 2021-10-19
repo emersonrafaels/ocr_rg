@@ -72,6 +72,35 @@ class image_view_functions():
 
 
     @staticmethod
+    def view_image_with_coordinates(img_atual, nome_janela="IMAGEM ATUAL"):
+
+        """
+
+            FUNÇÃO PARA VISUALIZAÇÃO DE UMA IMAGEM.
+            A VISUALIZAÇÃO UTILIZA O WINDOWFRAME DO PYPLOT - FUNÇÃO IMSHOW.
+
+
+            # Arguments
+                img_atual            - Required : Imagem a ser visualizada (Object)
+                nome_janela          - Required : Nome que será usada como
+                                                  título da janela de exibição
+                                                  da imagem (String)
+            # Returns
+
+        """
+
+        try:
+            # MOSTRANDO IMAGEM ATUAL
+            plt.imshow(img_atual)
+
+            # AGUARDA A AÇÃO DO USUÁRIO DE FECHAR A JANELA DE IMAGEM
+            plt.show()
+
+        except Exception as ex:
+            print(ex)
+
+
+    @staticmethod
     def create_bounding_box(img, bounding_positions, color=(0, 255, 0)):
 
         """
@@ -93,11 +122,15 @@ class image_view_functions():
         """
 
         try:
+            # OBTENDO AS POSIÇÕES PARA O BOUNDING BOX
             x1 = bounding_positions['x1']
             y1 = bounding_positions['y1']
             x2 = bounding_positions['x2']
             y2 = bounding_positions['y2']
 
+            # DESENHNADO O BOUNDING BOX (RETANGULAR SOBRE A IMAGEM)
+            # COR: color
+            # ESPESSURA: 2
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
 
             return img
@@ -107,14 +140,37 @@ class image_view_functions():
 
 
     @staticmethod
-    def put_text_image(texto, x, y, img, fonte, tamanho_texto=32, cor=(0, 0, 255)):
+    def put_text_image(img, text, x, y, font,
+                       text_size=32, color=(0, 0, 255)):
+
+        """
+
+            FUNÇÃO PARA ESCREVER UM TEXTO SOBRE UMA IMAGEM.
+            RECEBE AS POSIÇÕES X, Y (POSIÇÕES DE INICIO DA ESCRITA)
+            RECEBE A LARGURA E ALTURA, PARA COMPLETAR A CAIXA.
+
+
+            # Arguments
+                img                  - Required : Imagem a ser aplicada o texto (Object)
+                text                 - Required : Texto a ser escrito (String)
+                x                    - Required : Posição x de início do texto (Integer)
+                y                    - Required : Posição y de início do texto (Integer)
+                font                 - Required : Fonte desejada para a letra (Object)
+                text_size            - Optional : Tamanho da letra (Integer)
+                color                - Optional : Cor da letra em formato RGB(Tuple)
+            # Returns
+                x                    - Required : Posição left (Integer)
+                y                    - Required : Posição Top (Integer)
+                img                  - Required : Imagem após aplicação da caixa (Object)
+
+        """
 
         try:
-            fonte = ImageFont.truetype(fonte, tamanho_texto)
+            font = ImageFont.truetype(font, text_size)
 
             img_pil = Image.fromarray(img)
             draw = ImageDraw.Draw(img_pil)
-            draw.text((x, y - tamanho_texto), texto, font=fonte, fill=cor)
+            draw.text((x, y), text, font=font, fill=color)
             img = np.array(img_pil)
         except Exception as ex:
             print(ex)
