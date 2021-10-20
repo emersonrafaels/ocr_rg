@@ -554,7 +554,7 @@ class Image_Pre_Processing(object):
         """
 
         # INICIANDO AS VARIÁVEIS QUE SERÃO RETORNADAS
-        img = image_crooped_contour = image_warped = None
+        img = image_cropped_contour = image_warped = None
 
         # REALIZANDO A LEITURA DA IMAGEM EM ESCALA DE CINZA
         img = read_image_gray(img_path)
