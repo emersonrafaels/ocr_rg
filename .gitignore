@@ -5,3 +5,5 @@ README.md
 .idea
 __pycache__
 BD_OCR_RG/teste.py
+# Ignore dynaconf secret files
+.secrets.*
