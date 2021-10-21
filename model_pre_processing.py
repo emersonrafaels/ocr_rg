@@ -36,14 +36,14 @@ from UTILS.image_read import read_image_gray
 
 class Image_Pre_Processing(object):
 
-    def __init__(self, blur_ksize=5, threshold_value=255,
+    def __init__(self, blur_ksize=5, threshold_max_color_value=255,
                  dilation_ksize=5, output_size=600):
 
         # 1 - DEFININDO O TAMANHO DO KERNEL GAUSSIANO PARA DESFOQUE
         self.__blur_ksize = blur_ksize
 
         # 2 - DEFININDO O VALOR DE PIXEL QUE SERÁ USADO COMO LIMIAR
-        self.__threshold_value = threshold_value
+        self.__threshold_max_color_value = threshold_max_color_value
 
         # 3 - DEFININDO O TAMANHO DO KERNEL GAUSSIANO PARA DILATAÇÃO
         self.__dilation_ksize = dilation_ksize
@@ -109,11 +109,14 @@ class Image_Pre_Processing(object):
             # Arguments
 
             # Returns
-                self.__threshold_value        - Required : Propriedade, somente leitura, do limiar (Integer)
+                self.__threshold_max_color_value     - Required : Propriedade,
+                                                      somente leitura, do valor de pixel que será
+                                                      convertido após aplicação da
+                                                      técnica de limiar (Integer)
 
         """
 
-        return self.__threshold_value
+        return self.__threshold_max_color_value
 
 
     @property
@@ -252,7 +255,7 @@ class Image_Pre_Processing(object):
                 img                    - Required : Imagem para processamento (Array)
 
             # Returns
-                blur                   - Required : Imagem após processamento do limiar (Array)
+                thresh                 - Required : Imagem após processamento do limiar (Array)
 
         """
 
@@ -260,7 +263,7 @@ class Image_Pre_Processing(object):
         validator = False
 
         try:
-            thresh = cv2.adaptiveThreshold(img, self.__threshold_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            thresh = cv2.adaptiveThreshold(img, self.__threshold_max_color_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                            cv2.THRESH_BINARY_INV, 11, 1)
 
             print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO")
