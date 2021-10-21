@@ -25,6 +25,8 @@ __author__ = """Emerson V. Rafael (EMERVIN)"""
 __data_atualizacao__ = "16/10/2021"
 
 
+from dynaconf import settings
+
 from model_pre_processing import Image_Pre_Processing
 from model_ocr import Execute_OCR_RG
 
@@ -34,7 +36,8 @@ if __name__ == "__main__":
     caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
 
     # DEFININDO A CLASSE DE PRÉ PROCESSAMENTO
-    pre_processing = Image_Pre_Processing(blur_ksize=5, threshold_value=255, dilation_ksize=5, output_size=600)
+    pre_processing = Image_Pre_Processing(settings.BLUR_KSIZE, settings.THRESHOLD_VALUE,
+                                          settings.DILATION_KSIZE, settings.OUTPUT_SIZE)
 
     # DEFININDO AS PROPRIEDADES PARA A LEITURA DA IMAGEM (OCR)
     rg_reader = Execute_OCR_RG(pre_processing)

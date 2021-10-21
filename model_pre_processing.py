@@ -51,7 +51,7 @@ class Image_Pre_Processing(object):
         # 4 - LARGURA PARA RESIZE DA IMAGEM
         self.__width = 600
 
-        # 5 -
+        # 5 - TAMANHO DE SAÍDA DA IMAGEM (QUADRADA)
         self.__output_size = output_size
 
 
@@ -121,6 +121,7 @@ class Image_Pre_Processing(object):
 
         """
 
+            
 
             # Arguments
 
