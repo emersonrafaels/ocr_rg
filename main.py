@@ -36,8 +36,11 @@ if __name__ == "__main__":
     caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
 
     # DEFININDO A CLASSE DE PRÉ PROCESSAMENTO
-    pre_processing = Image_Pre_Processing(settings.BLUR_KSIZE, settings.THRESHOLD_MAX_COLOR_VALUE,
-                                          settings.DILATION_KSIZE, settings.OUTPUT_SIZE)
+    pre_processing = Image_Pre_Processing(settings.BLUR_KSIZE,
+                                          settings.THRESHOLD_MAX_COLOR_VALUE,
+                                          settings.DILATION_KSIZE,
+                                          settings.WIDTH_RESIZE,
+                                          settings.OUTPUT_SIZE)
 
     # DEFININDO AS PROPRIEDADES PARA A LEITURA DA IMAGEM (OCR)
     rg_reader = Execute_OCR_RG(pre_processing)

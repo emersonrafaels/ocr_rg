@@ -28,6 +28,7 @@ __data_atualizacao__ = "16/10/2021"
 from inspect import stack
 
 import cv2
+from dynaconf import settings
 import numpy as np
 import imutils
 
@@ -37,7 +38,7 @@ from UTILS.image_read import read_image_gray
 class Image_Pre_Processing(object):
 
     def __init__(self, blur_ksize=5, threshold_max_color_value=255,
-                 dilation_ksize=5, output_size=600):
+                 dilation_ksize=5, width_resize=600, output_size=600):
 
         # 1 - DEFININDO O TAMANHO DO KERNEL GAUSSIANO PARA DESFOQUE
         self.__blur_ksize = blur_ksize
@@ -49,7 +50,7 @@ class Image_Pre_Processing(object):
         self.__dilation_ksize = dilation_ksize
 
         # 4 - LARGURA PARA RESIZE DA IMAGEM
-        self.__width = 600
+        self.__width = width_resize
 
         # 5 - TAMANHO DE SAÍDA DA IMAGEM (QUADRADA)
         self.__output_size = output_size
@@ -263,8 +264,10 @@ class Image_Pre_Processing(object):
         validator = False
 
         try:
-            thresh = cv2.adaptiveThreshold(img, self.__threshold_max_color_value, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                           cv2.THRESH_BINARY_INV, 11, 1)
+            thresh = cv2.adaptiveThreshold(img, self.__threshold_max_color_value,
+                                           cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                           cv2.THRESH_BINARY_INV, settings.THRESHOLD_KSIZE,
+                                           settings.SUBTRACT_FROM_MEAN)
 
             print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO")
 
