@@ -31,7 +31,7 @@ import cv2
 import numpy as np
 import imutils
 
-from utils.image_read import read_image_gray
+from UTILS.image_read import read_image_gray
 
 
 class Image_Pre_Processing(object):

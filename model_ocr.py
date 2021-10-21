@@ -35,7 +35,7 @@ import warnings
 import cv2
 import pytesseract
 
-from utils.image_view import image_view_functions
+from UTILS.image_view import image_view_functions
 
 warnings.filterwarnings("ignore")
 
