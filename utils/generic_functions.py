@@ -16,9 +16,63 @@ __data_atualizacao__ = "04/07/2021"
 
 import datetime
 from inspect import stack
+from os import path, makedirs
 import time
 
 import pandas as pd
+
+
+def verify_exists(dir):
+
+    """
+
+        FUNÇÃO PARA VERIFICAR SE DIRETÓRIO (PATH) EXISTE.
+
+        # Arguments
+            dir                   - Required : Diretório a ser verificado (String)
+
+        # Returns
+            validator             - Required : Validador da função (Boolean)
+
+    """
+
+    # INICIANDO O VALIDADOR DA FUNÇÃO
+    validator = False
+
+    try:
+        validator = path.exists(dir)
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+    return validator
+
+
+def create_path(dir):
+
+    """
+
+        FUNÇÃO PARA CRIAR UM DIRETÓRIO (PATH).
+
+        # Arguments
+            dir                   - Required : Diretório a ser criado (String)
+
+        # Returns
+            validator             - Required : Validador da função (Boolean)
+
+    """
+
+    # INICIANDO O VALIDADOR DA FUNÇÃO
+    validator = False
+
+    try:
+        # REALIZANDO A CRIAÇÃO DO DIRETÓRIO
+        makedirs(dir)
+
+        validator = True
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+    return validator
 
 
 def converte_int(valor_para_converter):
@@ -42,7 +96,7 @@ def converte_int(valor_para_converter):
         else:
             return int(valor_para_converter)
     except Exception as ex:
-        print(ex)
+        print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
         return None
 
 
@@ -105,14 +159,14 @@ def save_excel(dataframe_to_save, data_dir):
     return validador
 
 
-def obtem_date_time(tipo_retorno):
+def get_date_time_now(return_type):
 
     """
 
         OBTÉM TODOS OS POSSÍVEIS RETORNOS DE DATA E TEMPO.
 
         # Arguments
-            tipo_retorno                    - Required : Formato de retorno. (String)
+            return_type                    - Required : Formato de retorno. (String)
 
         # Returns
 
@@ -130,7 +184,7 @@ def obtem_date_time(tipo_retorno):
 
     try:
         ts = time.time()
-        stfim = datetime.datetime.fromtimestamp(ts).strftime(tipo_retorno)
+        stfim = datetime.datetime.fromtimestamp(ts).strftime(return_type)
 
         return stfim
     except Exception as ex:

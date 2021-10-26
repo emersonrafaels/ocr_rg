@@ -32,7 +32,7 @@ from dynaconf import settings
 import numpy as np
 import imutils
 
-from UTILS.generic_functions import obtem_date_time
+from UTILS.generic_functions import get_date_time_now
 from UTILS.image_read import read_image_gray
 
 
@@ -173,7 +173,7 @@ class Image_Pre_Processing(object):
             # REALIZANDO O RESIZE DA IMAGEM COM AS NOVAS DIMENSÕES
             image_resize = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-            print("RESIZE DA IMAGEM APLICADO COM SUCESSO - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+            print("RESIZE DA IMAGEM APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             return image_resize
 
@@ -214,7 +214,7 @@ class Image_Pre_Processing(object):
         try:
             blur = cv2.GaussianBlur(img, (self.__blur_ksize, self.__blur_ksize), 0)
 
-            print("OCR RG - TÉCNICA DE DESFOQUE GAUSSIANO APLICADO COM SUCESSO - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+            print("OCR RG - TÉCNICA DE DESFOQUE GAUSSIANO APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             validator = True
 
@@ -270,7 +270,7 @@ class Image_Pre_Processing(object):
                                            cv2.THRESH_BINARY_INV, settings.THRESHOLD_KSIZE,
                                            settings.SUBTRACT_FROM_MEAN)
 
-            print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+            print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             validator = True
 
@@ -302,7 +302,7 @@ class Image_Pre_Processing(object):
         # INICIANDO O VALIDADOR DA FUNÇÃO
         validator = False
 
-        print("OCR RG - INICIANDO O PRÉ PROCESSAMENTO DA IMAGEM - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+        print("OCR RG - INICIANDO O PRÉ PROCESSAMENTO DA IMAGEM - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
         try:
             # REALIZANDO O DESFOQUE GAUSSIANO
@@ -346,7 +346,7 @@ class Image_Pre_Processing(object):
         # INICIANDO O VALIDADOR DA FUNÇÃO
         validator = False
 
-        print("OCR RG - BUSCANDO O DOCUMENTO NA IMAGEM - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+        print("OCR RG - BUSCANDO O DOCUMENTO NA IMAGEM - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
         try:
             # OBTENDO TODOS OS CONTORNOS
@@ -396,7 +396,7 @@ class Image_Pre_Processing(object):
         # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO A LISTA DE CONTORNOS NA HORIZONTAL E VERTICAL
         x, y = [], []
 
-        print("OCR RG - CROPPANDO O DOCUMENTO NA IMAGEM - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+        print("OCR RG - CROPPANDO O DOCUMENTO NA IMAGEM - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
         try:
             for contour_line in contour:
@@ -411,7 +411,7 @@ class Image_Pre_Processing(object):
 
             validator = True
 
-            print("OCR RG - CROP REALIZADO COM SUCESSO - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+            print("OCR RG - CROP REALIZADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             return validator, image_cropped_contour
 
@@ -457,7 +457,7 @@ class Image_Pre_Processing(object):
             # REALIZANDO A DILATAÇÃO PARA AUMENTAR A MÁSCARA DE CONTORNO
             mask = cv2.dilate(mask, (self.__dilation_ksize, self.__dilation_ksize), iterations=10)
 
-            print("OCR RG - MASK DE CONTORNO APLICADO COM SUCESSO - {}".format(obtem_date_time("%d/%m/%Y %H:%M:%S")))
+            print("OCR RG - MASK DE CONTORNO APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             validator = True
 

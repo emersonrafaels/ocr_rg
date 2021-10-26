@@ -1,0 +1,3 @@
+[submodule "UTILS/conectores_db"]
+	path = UTILS/conectores_db
+	url = git@github.com:emersonrafaels/conectores_db.git
