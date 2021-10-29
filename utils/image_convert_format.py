@@ -120,7 +120,8 @@ def array_to_pil(image):
         img_pil = Image.fromarray(image, mode='r')
 
     except Exception as ex:
-        print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+        # print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+        pass
         img_pil = image
 
     return img_pil

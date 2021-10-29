@@ -256,6 +256,9 @@ class Execute_OCR_RG(object):
             # SUBSTITUINDO '/' POR '-'
             output = re.sub(r"/", "-", output)
 
+            # SUBSTITUINDO ',' POR '.'
+            output = output.replace(",", ".")
+
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
             output = field
