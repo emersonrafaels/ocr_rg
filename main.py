@@ -30,10 +30,7 @@ from dynaconf import settings
 from model_pre_processing import Image_Pre_Processing
 from model_ocr import Execute_OCR_RG
 
-
-if __name__ == "__main__":
-
-    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
+def main_ocr_rg(image):
 
     # DEFININDO A CLASSE DE PRÉ PROCESSAMENTO
     pre_processing = Image_Pre_Processing(settings.BLUR_KSIZE,
@@ -46,6 +43,14 @@ if __name__ == "__main__":
     rg_reader = Execute_OCR_RG(pre_processing)
 
     # REALIZANDO O FLUXO COMPLETO
-    output_rg = rg_reader.execute_pipeline_ocr(caminho_imagem)
+    output_rg = rg_reader.execute_pipeline_ocr(image)
 
     print(output_rg)
+
+
+if __name__ == "__main__":
+
+    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
+
+    main_ocr_rg(caminho_imagem)
+

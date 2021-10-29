@@ -33,6 +33,7 @@ import sqlite3
 from dynaconf import settings
 
 from UTILS.generic_functions import create_path, get_date_time_now, verify_exists
+from UTILS.conectores_db.main import conectores
 
 
 def configure_logging():
@@ -191,5 +192,39 @@ def start_log():
 
             # CONFIGURANDO O USO DO BANCO DE DADOS (SQLITE)
             validator = configure_log_bd()
+
+    return validator
+
+
+def execute_register_log_bd(msg=None, typeLog=None):
+
+    """
+
+        REALIZANDO REGISTRO DE LOG NO BANCO DE DADOS (SQLITE)
+
+        # Arguments
+            msg                 - Optional : Log a ser registrado (String)
+            typeLog             - Optional : Tipo de log a ser registrado (String)
+
+        # Returns
+            validator           - Required : Validador de registro do log (Boolean)
+
+    """
+
+    # INICIANDO O VALIDADOR DA FUNÇÃO
+    validator = False
+
+    try:
+        # DEFININDO OS PARÂMETROS DE CONEXÃO
+        dir_bd_bds = path.join(settings.DIR_SAVE_LOGS, settings.DB_LOGS)
+        ssql_bds = "INSERT INTO tb_log (log_splunk, tipo, data) VALUES(?, ?, ?)"
+        params_bds = (msg, typeLog, get_date_time_now("%d/%m/%Y %H:%M:%S"))
+        tipo_query_bds = "INSERT"
+
+        # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+        validator = conectores().execute_query_sqlite(dir_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+
+    except sqlite3.Error as ex:
+        print(str(ex))
 
     return validator

@@ -33,9 +33,9 @@ import re
 import warnings
 
 import cv2
-import pytesseract
 
 from UTILS.image_view import image_view_functions
+from UTILS.image_ocr import ocr_functions
 
 warnings.filterwarnings("ignore")
 
@@ -50,17 +50,14 @@ class Execute_OCR_RG(object):
         # 2 - DEFININDO A CLASSE PROPRIEDADE DE TAMANHO DE SAÍDA DA IMAGEM
         self.__output_size = self.__pre_processing.output_size
 
-        # 3 - OBTENDO A INSTÂMNCIA DO TESSERACT
-        self.__tesseract = pytesseract
-
-        # 4 - DEFININDO OS CAMPOS A SEREM LIDOS
+        # 3 - DEFININDO OS CAMPOS A SEREM LIDOS
         self.FIELDS = ["RG", "DATA_EXPED", "NOME", "NOME_MAE", "NOME_PAI",
                        "DATA_NASC", "CPF", "CIDADE_ORIGEM"]
 
-        # 5 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
+        # 4 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
         self.COORDS = self.__get_coords()
 
-        # 6 - DEFININDO DE-PARA DE ESTADO-CIDADE
+        # 5 - DEFININDO DE-PARA DE ESTADO-CIDADE
         self.UF_TO_STATE = {
                 'AC': 'Acre',
                 'AL': 'Alagoas',
@@ -122,6 +119,20 @@ class Execute_OCR_RG(object):
 
 
     def __get_coords(self):
+
+        """
+
+            OBTÉM TODAS AS COORDENADAS PARA CROP DOS CAMPOS DO DOCUMENTO.
+
+            ESSAS COORDENADAS SÃO UTILIZADAS NA FUNÇÃO DE ORQUESTRAÇÃO DO OCR.
+
+            # Arguments
+                field              - Required : Valor a ser pós processado (String)
+
+            # Returns
+                output             - Required : Valor após processamento (String)
+
+        """
 
         nrg_xy = [(87, 35), (280, 96)]
         exped_xy = [(400, 35), (540, 110)]
@@ -251,6 +262,7 @@ class Execute_OCR_RG(object):
 
         return output
 
+
     def __postprocess_dates(self, field):
 
         """
@@ -320,7 +332,24 @@ class Execute_OCR_RG(object):
         return city, state
 
 
-    def __execute_ocr(self, img):
+    def execute_ocr(self, img):
+
+        """
+
+            REALIZA O OCR NO DOCUMENTO, PARA ISSO:
+                1) PERCORRE CADA UM DOS CAMPOS DESEJADOS
+                2) PARA CADA UM DOS CAMPOS, REALIZA O CROP (MASK)
+                   USANDO AS COORDENADAS ESPERADAS PARA O CAMPO
+                3) APÓS O CROP, APLICA O TESSERACT
+
+            # Arguments
+                img                - Required : Imagem para aplicar o OCR (Array)
+
+            # Returns
+                info_extracted     - Required : Resultando contendo o OCR
+                                                para cada um dos campos (Dict)
+
+        """
 
         # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR
         info_extracted = {}
@@ -328,8 +357,10 @@ class Execute_OCR_RG(object):
         # INICIANDO O DICT DE POSIÇÕES
         bounding_positions = {}
 
+        # PERCORRENDO CADA UM DOS CAMPOS E OBTENDO AS SUAS RESPECTIVAS COORDENADAS
         for field, ((x1, y1), (x2, y2)) in zip(self.FIELDS, self.COORDS):
 
+            # OBTENDO OS BOUNDING POSITIONS
             bounding_positions['x1'] = x1
             bounding_positions['y1'] = y1
             bounding_positions['x2'] = x2
@@ -339,7 +370,7 @@ class Execute_OCR_RG(object):
             roi = img[y1:y2, x1:x2]
 
             # REALIZANDO O OCR
-            info_extracted[field] = self.__tesseract.image_to_string(roi).strip()
+            info_extracted[field] = ocr_functions().Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
             # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
@@ -347,6 +378,43 @@ class Execute_OCR_RG(object):
             # VISUALIZANDO O CROP
             # image_view_functions.view_image_with_coordinates(roi)
 
+        return info_extracted
+
+
+    def orchestra_pos_processing(self, info_extracted):
+
+        """
+
+            APLICA O PÓS PROCESSAMENTO PARA CADA UM DOS CAMPOS OBTIDOS.
+
+            # Arguments
+                info_extracted     - Required : Resultando contendo o OCR
+                                                para cada um dos campos (Dict)
+
+            # Returns
+                info_extracted     - Required : Resultando contendo o OCR
+                                                para cada um dos campos
+                                                após os pós processamentos (Dict)
+
+        """
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
+        for column in ["NOME", "NOME_MAE", "NOME_PAI"]:
+            info_extracted[column] = self.__postprocess_string(info_extracted[column])
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
+        for column in ["RG", "CPF"]:
+            info_extracted[column] = self.__postprocess_num(info_extracted[column])
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS DATAS
+        for column in ["DATA_EXPED", "DATA_NASC"]:
+            info_extracted[column] = self.__postprocess_dates(info_extracted[column])
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO ORIGEM
+        info_extracted["CIDADE_ORIGEM"], info_extracted["UF_ORIGEM"] = self.__postprocess_location(
+            info_extracted["CIDADE_ORIGEM"])
+
+        # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted
 
 
@@ -368,22 +436,9 @@ class Execute_OCR_RG(object):
                                    interpolation=cv2.INTER_AREA)
 
         # APLICANDO O OCR
-        info_extracted = self.__execute_ocr(warped_img)
+        info_extracted = self.execute_ocr(cropped_image)
 
-        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
-        for column in ["NOME", "NOME_MAE", "NOME_PAI"]:
-            info_extracted[column] = self.__postprocess_string(info_extracted[column])
-
-        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
-        for column in ["RG", "CPF"]:
-            info_extracted[column] = self.__postprocess_num(info_extracted[column])
-
-        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS DATAS
-        for column in ["DATA_EXPED", "DATA_NASC"]:
-            info_extracted[column] = self.__postprocess_dates(info_extracted[column])
-
-
-        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO ORIGEM
-        info_extracted["CIDADE_ORIGEM"], info_extracted["UF_ORIGEM"] = self.__postprocess_location(info_extracted["CIDADE_ORIGEM"])
+        # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
+        info_extracted = self.orchestra_pos_processing(info_extracted)
 
         return info_extracted
