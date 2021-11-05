@@ -322,10 +322,14 @@ class Execute_OCR_RG(object):
             # TRATANDO O VALOR DA CIDADE
             city = re.sub(self.regex_only_letters, " ", city).replace("  ", " ").strip()
 
-            # OBTENDO O ESTADO
+            # OBTENDO O ESTADO\
             list_result_state = [key for key in self.UF_TO_STATE if (self.UF_TO_STATE[key] == city)]
             if len(list_result_state) > 0:
-                state = list_result_state[0].strip()
+                state = list_result_state[0]
+
+            # RETIRANDO ESPAÇOS ANTES E APÓS OS VALORES OBTIDOS
+            city = city.strip()
+            state = state.strip()
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
@@ -376,10 +380,10 @@ class Execute_OCR_RG(object):
             info_extracted[field] = ocr_functions().Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
-            image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
+            # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
-            image_view_functions.view_image_with_coordinates(roi)
+            # image_view_functions.view_image_with_coordinates(roi)
 
         return info_extracted
 
