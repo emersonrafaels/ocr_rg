@@ -19,6 +19,7 @@ __data_atualizacao__ = "28/10/2021"
 from inspect import stack
 
 import cv2
+from dynaconf import settings
 import pytesseract
 
 from UTILS.generic_functions import converte_int
@@ -50,10 +51,10 @@ class ocr_functions():
     """
 
     def __init__(self,
-                 lang_padrao='por',
-                 config_tesseract_psm='1',
-                 config_tesseract_oem='3',
-                 tipo_retorno_ocr_input="TEXTO"):
+                 lang_padrao=settings.TESSERACT_LANG,
+                 config_tesseract_psm=settings.TESSERACT_PSM,
+                 config_tesseract_oem=settings.TESSERACT_OEM,
+                 tipo_retorno_ocr_input=settings.TIPO_OCR):
 
 
         # 1 - LINGUAGEM PADRÃO DO OCR
