@@ -325,7 +325,7 @@ class Execute_OCR_RG(object):
             # OBTENDO O ESTADO
             list_result_state = [key for key in self.UF_TO_STATE if (self.UF_TO_STATE[key] == city)]
             if len(list_result_state) > 0:
-                state = list_result_state[0]
+                state = list_result_state[0].strip()
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
