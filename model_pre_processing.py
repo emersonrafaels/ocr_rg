@@ -330,13 +330,13 @@ class Image_Pre_Processing(object):
             CASOS NO QUAL O DOCUMENTO POSSA ESTAR SCANEADO EM UMA FOLHA SULFITE.
 
             1) OBTÉM TODOS OS CONTORNOS
-            2) APLICA LIMIAR DOS PLANOS DA IMAGEM (ADAPTIVETHRESHOLD)
+            2) OBTÉM O CONTORNO DE MÁXIMA ÁREA.
 
             # Arguments
-                img                    - Required : Imagem para processamento (Array)
+                img                - Required : Imagem para processamento (Array)
 
             # Returns
-                thresh                - Required : Imagem após ambos processamentos (Array)
+                roi                - Required : Área de interesse (Array)
 
         """
 
