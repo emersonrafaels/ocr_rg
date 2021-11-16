@@ -107,22 +107,22 @@ class Execute_OCR_RG(object):
 
         """
 
-        nrg_xy = [(87, 35), (280, 96)]
-        exped_xy = [(400, 35), (540, 110)]
-        nome_xy = [(21, 80), (566, 173)]
-        mae_xy = [(21, 240), (566, 300)]
-        pai_xy = [(21, 206), (566, 234)]
-        natal_xy = [(15, 310), (394, 380)]
-        nasc_xy = [(400, 310), (558, 380)]
-        cpf_xy = [(20, 450), (240, 520)]
-        coords_default = [nrg_xy, exped_xy, nome_xy, mae_xy, pai_xy, nasc_xy, cpf_xy, natal_xy]
+        # DEFININDO OS PARÂMETROS DE CONEXÃO
+        caminho_bd_bds = settings.DIR_BD_OCR
+        ssql_bds = settings.QUERY_COORD
+        params_bds = (None,)
+        tipo_query_bds = settings.QUERY_TYPE_COORD
+
+        # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+        result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
         coords = []
-        for ((x1, y1), (x2, y2)) in coords_default:
+
+        for field, x1, y1, x2, y2, doc_verso in result[1]:
             x1 //= int(600/self.__output_size)
             y1 //= int(600/self.__output_size)
             x2 //= int(600/self.__output_size)
             y2 //= int(600/self.__output_size)
-            coords.append([(x1, y1), (x2, y2)])
+            coords.append([field, doc_verso, (x1, y1), (x2, y2)])
         return coords
 
 
@@ -147,9 +147,9 @@ class Execute_OCR_RG(object):
 
         # EXECUTANDO A QUERY E OBTENDO O RESULTADO
         result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
-        print(result[1][0][0])
 
-        return result
+        # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+        return result[1]
 
 
     def __postprocess_string(self, field):
@@ -432,14 +432,14 @@ class Execute_OCR_RG(object):
         # REALIZANDO O PRÉ PROCESSAMENTO
         img_original, cropped_image, warped_img = self.__pre_processing.run(img_path)
 
+        # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM CROPPED
+        cropped_image = cv2.resize(cropped_image, (600, 600),
+                                   interpolation=cv2.INTER_AREA)
+
         # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
         image_view_functions.view_image(img_original, nome_janela="ORIGINAL")
         image_view_functions.view_image(cropped_image, nome_janela="CROPPED")
         image_view_functions.view_image(warped_img, nome_janela="WARPED")
-
-        # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM CROPPED
-        cropped_image = cv2.resize(cropped_image, (600, 600),
-                                   interpolation=cv2.INTER_AREA)
 
         # APLICANDO O OCR
         info_extracted = self.execute_ocr(cropped_image)
