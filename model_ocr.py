@@ -33,9 +33,11 @@ import re
 import warnings
 
 import cv2
+from dynaconf import settings
 
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
+from UTILS.conectores_db.main import conectores
 
 warnings.filterwarnings("ignore")
 
@@ -51,42 +53,13 @@ class Execute_OCR_RG(object):
         self.__output_size = self.__pre_processing.output_size
 
         # 3 - DEFININDO OS CAMPOS A SEREM LIDOS
-        self.FIELDS = ["RG", "DATA_EXPED", "NOME", "NOME_MAE", "NOME_PAI",
-                       "DATA_NASC", "CPF", "CIDADE_ORIGEM"]
+        self.FIELDS = settings.FIELDS
 
         # 4 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
         self.COORDS = self.__get_coords()
 
         # 5 - DEFININDO DE-PARA DE ESTADO-CIDADE
-        self.UF_TO_STATE = {
-                'AC': 'Acre',
-                'AL': 'Alagoas',
-                'AP': 'Amapá',
-                'AM': 'Amazonas',
-                'BA': 'Bahia',
-                'CE': 'Ceará',
-                'DF': 'Distrito Federal',
-                'ES': 'Espírito Santo',
-                'GO': 'Goiás',
-                'MA': 'Maranhão',
-                'MT': 'Mato Grosso',
-                'MS': 'Mato Grosso do Sul',
-                'MG': 'Minas Gerais',
-                'PA': 'Pará',
-                'PB': 'Paraíba',
-                'PR': 'Paraná',
-                'PE': 'Pernambuco',
-                'PI': 'Piauí',
-                'RJ': 'Rio de Janeiro',
-                'RN': 'Rio Grande do Norte',
-                'RS': 'Rio Grande do Sul',
-                'RO': 'Rondônia',
-                'RR': 'Roraima',
-                'SC': 'Santa Catarina',
-                'SP': 'São Paulo',
-                'SE': 'Sergipe',
-                'TO': 'Tocantins'
-        }
+        self.UF_TO_STATE = self.__get_uf_state()
 
         # 6 - DEFININDO REGEX
 
@@ -151,6 +124,32 @@ class Execute_OCR_RG(object):
             y2 //= int(600/self.__output_size)
             coords.append([(x1, y1), (x2, y2)])
         return coords
+
+
+    def __get_uf_state(self):
+
+        """
+
+            OBTÉM TODAS OS MUNICIPIOS/ESTADOS DISPONÍVEIS NA BASE DO IBGE.
+
+            # Arguments
+
+            # Returns
+                df_municipios_uf             - Required : Dataset contendo municipios/estados (DataFrame)
+
+        """
+
+        # DEFININDO OS PARÂMETROS DE CONEXÃO
+        caminho_bd_bds = settings.DIR_BD_OCR
+        ssql_bds = settings.QUERY_MUNICIPIOS_UF
+        params_bds = (None,)
+        tipo_query_bds = settings.QUERY_TYPE_MUNICIPIOS_UF
+
+        # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+        result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+        print(result[1][0][0])
+
+        return result
 
 
     def __postprocess_string(self, field):
