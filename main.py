@@ -33,6 +33,7 @@ from dynaconf import settings
 from model_pre_processing import Image_Pre_Processing
 from model_ocr import Execute_OCR_RG
 
+
 def main_ocr_rg(image):
 
     # DEFININDO A CLASSE DE PRÉ PROCESSAMENTO

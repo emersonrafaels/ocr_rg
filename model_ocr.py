@@ -53,7 +53,7 @@ class Execute_OCR_RG(object):
         self.__output_size = self.__pre_processing.output_size
 
         # 3 - DEFININDO OS CAMPOS A SEREM LIDOS
-        self.FIELDS = settings.FIELDS
+        self.FIELDS = self.__get_fields()
 
         # 4 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
         self.COORDS = self.__get_coords()
@@ -91,6 +91,36 @@ class Execute_OCR_RG(object):
         return self.__output_size
 
 
+    def __get_fields(self):
+
+        """
+
+            OBTÉM TODOS OS CAMPOS ATIVOS (ACEITOS) PELO MODELO DE OCR RG.
+
+            # Arguments
+
+            # Returns
+                output             - Required : Valor após processamento (String)
+
+        """
+
+        try:
+            # DEFININDO OS PARÂMETROS DE CONEXÃO
+            caminho_bd_bds = settings.DIR_BD_OCR
+            ssql_bds = settings.QUERY_FIELDS
+            params_bds = (None,)
+            tipo_query_bds = settings.QUERY_TYPE_FIELDS
+
+            # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+            list_fields_active = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+
+            # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+            return list_fields_active[1]
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            return settings.FIELDS
+
+
     def __get_coords(self):
 
         """
@@ -100,10 +130,10 @@ class Execute_OCR_RG(object):
             ESSAS COORDENADAS SÃO UTILIZADAS NA FUNÇÃO DE ORQUESTRAÇÃO DO OCR.
 
             # Arguments
-                field              - Required : Valor a ser pós processado (String)
 
             # Returns
-                output             - Required : Valor após processamento (String)
+                coords             - Required : Lista contendo campos e
+                                                coordenadas para crop (List)
 
         """
 
@@ -117,12 +147,12 @@ class Execute_OCR_RG(object):
         result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
         coords = []
 
-        for field, x1, y1, x2, y2, doc_verso in result[1]:
+        for field, nome_template, x1, y1, x2, y2, doc_verso in result[1]:
             x1 //= int(600/self.__output_size)
             y1 //= int(600/self.__output_size)
             x2 //= int(600/self.__output_size)
             y2 //= int(600/self.__output_size)
-            coords.append([field, doc_verso, (x1, y1), (x2, y2)])
+            coords.append([field, nome_template, doc_verso, (x1, y1), (x2, y2)])
         return coords
 
 
@@ -146,10 +176,10 @@ class Execute_OCR_RG(object):
         tipo_query_bds = settings.QUERY_TYPE_MUNICIPIOS_UF
 
         # EXECUTANDO A QUERY E OBTENDO O RESULTADO
-        result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+        df_municipios_uf = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
 
         # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
-        return result[1]
+        return df_municipios_uf[1]
 
 
     def __postprocess_string(self, field):
