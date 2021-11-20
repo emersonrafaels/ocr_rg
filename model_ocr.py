@@ -104,6 +104,9 @@ class Execute_OCR_RG(object):
 
         """
 
+        # INICIANDO A VARIÁVEL DE RESULTADO
+        result_list_fields_active = []
+
         try:
             # DEFININDO OS PARÂMETROS DE CONEXÃO
             caminho_bd_bds = settings.DIR_BD_OCR
@@ -113,12 +116,14 @@ class Execute_OCR_RG(object):
 
             # EXECUTANDO A QUERY E OBTENDO O RESULTADO
             list_fields_active = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+            result_list_fields_active = list_fields_active[1]
 
-            # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
-            return list_fields_active[1]
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
-            return settings.FIELDS
+            result_list_fields_active = settings.FIELDS
+
+        # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+        return result_list_fields_active
 
 
     def __get_coords(self):
@@ -137,23 +142,32 @@ class Execute_OCR_RG(object):
 
         """
 
-        # DEFININDO OS PARÂMETROS DE CONEXÃO
-        caminho_bd_bds = settings.DIR_BD_OCR
-        ssql_bds = settings.QUERY_COORD
-        params_bds = (None,)
-        tipo_query_bds = settings.QUERY_TYPE_COORD
+        # INICIANDO A VARIÁVEL DE RESULTADO
+        result_coords = []
 
-        # EXECUTANDO A QUERY E OBTENDO O RESULTADO
-        result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
-        coords = []
+        try:
+            # DEFININDO OS PARÂMETROS DE CONEXÃO
+            caminho_bd_bds = settings.DIR_BD_OCR
+            ssql_bds = settings.QUERY_COORD
+            params_bds = (None,)
+            tipo_query_bds = settings.QUERY_TYPE_COORD
 
-        for field, nome_template, x1, y1, x2, y2, doc_verso in result[1]:
-            x1 //= int(600/self.__output_size)
-            y1 //= int(600/self.__output_size)
-            x2 //= int(600/self.__output_size)
-            y2 //= int(600/self.__output_size)
-            coords.append([field, nome_template, doc_verso, (x1, y1), (x2, y2)])
-        return coords
+            # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+            result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+
+            for field, nome_template, x1, y1, x2, y2, doc_verso in result[1]:
+                x1 //= int(600/self.__output_size)
+                y1 //= int(600/self.__output_size)
+                x2 //= int(600/self.__output_size)
+                y2 //= int(600/self.__output_size)
+                result_coords.append([field, nome_template, doc_verso, (x1, y1), (x2, y2)])
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            result_coords = settings.FIELDS
+
+        # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+        return result_coords
 
 
     def __get_uf_state(self):
