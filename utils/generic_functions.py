@@ -235,3 +235,20 @@ def get_date_time_now(return_type):
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
         return datetime.datetime.now()
 
+
+def drop_duplicates_list(input_list):
+
+    """
+
+        RETIRA VALORES DUPLICADOS EM UMA LISTA.
+
+        # Arguments
+            input_list             - Required : Lista a ser percorrida (List)
+
+        # Returns
+            list_result            - Required : Lista após formatação (List)
+
+    """
+
+    return list(set(input_list))
+
