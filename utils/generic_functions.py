@@ -159,6 +159,50 @@ def save_excel(dataframe_to_save, data_dir):
     return validador
 
 
+def format_values_int(list_input):
+
+    """
+
+        RECEBE UMA LISTA, PERCORRE OS SEUS VALORES.
+        VERIFICA SE HÁ VALORES (EM FORMATO STRING
+        QUE PODEM SER CONVERTIDOS PARA INT).
+
+
+        # Arguments
+            list_input             - Required : Lista a ser percorrida (List)
+
+        # Returns
+            list_result            - Required : Lista após formatação (List)
+
+    """
+
+    # INICIANDO A LISTA RESULTANTE
+    list_result = []
+
+    try:
+        for value_x in list_input:
+
+            # INICIANDO A LISTA AUXILIAR
+            list_aux = []
+
+            for value_j in value_x:
+
+                if value_j.isdigit():
+                    value_j = int(value_j)
+
+                # SALVANDO O VALOR NA LISTA AUXILIAR
+                list_aux.append(value_j)
+
+            # SALVANDO A LISTA AUXILIAR, NA LISTA FINAL
+            list_result.append(list_aux)
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+    # RETORNANDO A LISTA RESULTANTE
+    return list_result
+
+
 def get_date_time_now(return_type):
 
     """
