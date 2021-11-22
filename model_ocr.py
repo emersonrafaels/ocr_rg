@@ -315,8 +315,8 @@ class Execute_OCR_RG(object):
         """
 
         try:
-            # MANTENDO APENAS LETRAS
-            output = re.sub(self.regex_only_letters, " ", field).replace("  ", " ").strip()
+            # MANTENDO APENAS LETRAS E TORNANDO O TEXTO UPPERCASE
+            output = re.sub(self.regex_only_letters, " ", field).replace("  ", " ").strip().upper()
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
             output = field
@@ -721,10 +721,6 @@ class Execute_OCR_RG(object):
 
         """
 
-        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
-        for column in ["NOME", "NOME_MAE", "NOME_PAI"]:
-            info_extracted[column] = self.__postprocess_string(info_extracted[column])
-
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
         for column in ["RG", "CPF"]:
             info_extracted[column] = self.__postprocess_num(info_extracted[column])
@@ -740,6 +736,11 @@ class Execute_OCR_RG(object):
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO NASCIMENTO
         info_extracted["CIDADE_NASC"], info_extracted["ESTADO_NASC"] = self.__postprocess_location(
             info_extracted["CIDADE_NASC"])
+
+        # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
+        for column in ["NOME", "NOME_MAE", "NOME_PAI", "CIDADE_ORIGEM",
+                       "ESTADO_ORIGEM", "CIDADE_NASC", "ESTADO_NASC"]:
+            info_extracted[column] = self.__postprocess_string(info_extracted[column])
 
         # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted
