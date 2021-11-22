@@ -445,25 +445,30 @@ class Execute_OCR_RG(object):
 
 
     @staticmethod
-    def get_best_distance_levenshtein_ocr(list_values):
+    def get_min_dif_len_letters(text, list_values):
 
         # INICIANDO A VARIÁVEL AUXILIAR QUE ARMAZENARÁ A VARIÁVEL COM A
         # MENOR QUANTIDADE DE DIFERENÇA DE QUANTIDADE ENTRE AS STRINGS
         min_dif_len_letters = 100
         result_max_similarity = []
 
-        for value in list_values:
+        if len(list_values):
 
-            # CALCULANDO A DIFERENÇA DE QUANTIDADE DE LETRAS
-            dif_len_string = abs(len(value[0]) - len(value[1][0]))
+            for value in list_values:
 
-            if dif_len_string < min_dif_len_letters:
+                # CALCULANDO A DIFERENÇA DE QUANTIDADE DE LETRAS
+                dif_len_string = abs(len(value[0]) - len(value[1][0]))
 
-                # ARMAZENANDO O RESULTADO
-                result_max_similarity = value
+                if dif_len_string < min_dif_len_letters:
 
-                # ATUALIZANDO O VALOR DE MÍNIMA DIFERENÇA DE TAMANHO DA STRING
-                min_dif_len_letters = dif_len_string
+                    # ARMAZENANDO O RESULTADO
+                    result_max_similarity = value[-1]
+
+                    # ATUALIZANDO O VALOR DE MÍNIMA DIFERENÇA DE TAMANHO DA STRING
+                    min_dif_len_letters = dif_len_string
+        else:
+            # RETORNA-SE O TEXTO CONTENDO O MAIOR NÚMERO DE CARACTERES
+            result_max_similarity = [max(text.split(" "), key=len), '_']
 
         # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
         return result_max_similarity
@@ -522,7 +527,7 @@ class Execute_OCR_RG(object):
                                 return result_max_similarity[-1][1]
 
         # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
-        return Execute_OCR_RG.get_best_distance_levenshtein_ocr(result_max_similarity)[-1]
+        return Execute_OCR_RG.get_min_dif_len_letters(text, result_max_similarity)
 
 
     def __postprocess_location(self, field):
