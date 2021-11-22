@@ -35,6 +35,7 @@ import warnings
 import cv2
 from dynaconf import settings
 
+from UTILS.generic_functions import format_values_int
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
 from UTILS.conectores_db.main import conectores
@@ -100,7 +101,8 @@ class Execute_OCR_RG(object):
             # Arguments
 
             # Returns
-                output             - Required : Valor após processamento (String)
+                result_list_fields_active       - Required : Lista contendo os
+                                                             campos ativos de RG (List)
 
         """
 
@@ -120,7 +122,7 @@ class Execute_OCR_RG(object):
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
-            result_list_fields_active = settings.FIELDS
+            result_list_fields_active = format_values_int(settings.FIELDS.values())
 
         # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
         return result_list_fields_active
@@ -153,9 +155,15 @@ class Execute_OCR_RG(object):
             tipo_query_bds = settings.QUERY_TYPE_COORD
 
             # EXECUTANDO A QUERY E OBTENDO O RESULTADO
-            result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+            result = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)[1]
 
-            for field, nome_template, x1, y1, x2, y2, doc_verso in result[1]:
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            result = format_values_int(settings.COORDS.values())
+
+        # FORMATANDO O RESULTADO NO FORMATO DE LISTA
+        try:
+            for field, nome_template, x1, y1, x2, y2, doc_verso in result:
                 x1 //= int(600/self.__output_size)
                 y1 //= int(600/self.__output_size)
                 x2 //= int(600/self.__output_size)
@@ -164,7 +172,6 @@ class Execute_OCR_RG(object):
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
-            result_coords = settings.FIELDS
 
         # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
         return result_coords
@@ -179,21 +186,28 @@ class Execute_OCR_RG(object):
             # Arguments
 
             # Returns
-                df_municipios_uf             - Required : Dataset contendo municipios/estados (DataFrame)
+                df_municipios_uf             - Required : Lista contendo municipios/estados (List)
 
         """
 
-        # DEFININDO OS PARÂMETROS DE CONEXÃO
-        caminho_bd_bds = settings.DIR_BD_OCR
-        ssql_bds = settings.QUERY_MUNICIPIOS_UF
-        params_bds = (None,)
-        tipo_query_bds = settings.QUERY_TYPE_MUNICIPIOS_UF
+        # INICIANDO A VARIÁVEL RESULTANTE
+        df_municipios_uf = []
 
-        # EXECUTANDO A QUERY E OBTENDO O RESULTADO
-        df_municipios_uf = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
+        try:
+            # DEFININDO OS PARÂMETROS DE CONEXÃO
+            caminho_bd_bds = settings.DIR_BD_OCR
+            ssql_bds = settings.QUERY_MUNICIPIOS_UF
+            params_bds = (None,)
+            tipo_query_bds = settings.QUERY_TYPE_MUNICIPIOS_UF
+
+            # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+            df_municipios_uf = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)[1]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
         # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
-        return df_municipios_uf[1]
+        return df_municipios_uf
 
 
     def __postprocess_string(self, field):
