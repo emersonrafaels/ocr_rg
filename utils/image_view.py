@@ -41,7 +41,7 @@ class image_view_functions():
 
 
     @staticmethod
-    def view_image(img_atual, nome_janela="IMAGEM ATUAL"):
+    def view_image(image, window_name="IMAGEM ATUAL"):
 
         """
 
@@ -50,8 +50,8 @@ class image_view_functions():
 
 
             # Arguments
-                img_atual            - Required : Imagem a ser visualizada (Object)
-                nome_janela          - Required : Nome que será usada como
+                image                - Required : Imagem a ser visualizada (Object)
+                window_name          - Required : Nome que será usada como
                                                   título da janela de exibição
                                                   da imagem (String)
             # Returns
@@ -60,7 +60,7 @@ class image_view_functions():
 
         try:
             # MOSTRANDO IMAGEM ATUAL
-            cv2.imshow(nome_janela, img_atual)
+            cv2.imshow(window_name, image)
 
             # AGUARDA A AÇÃO DO USUÁRIO DE FECHAR A JANELA DE IMAGEM
             cv2.waitKey(0)
@@ -72,7 +72,7 @@ class image_view_functions():
 
 
     @staticmethod
-    def view_image_with_coordinates(img_atual, nome_janela="IMAGEM ATUAL"):
+    def view_image_with_coordinates(image, window_name="IMAGEM ATUAL"):
 
         """
 
@@ -81,8 +81,8 @@ class image_view_functions():
 
 
             # Arguments
-                img_atual            - Required : Imagem a ser visualizada (Object)
-                nome_janela          - Required : Nome que será usada como
+                image                - Required : Imagem a ser visualizada (Object)
+                window_name          - Required : Nome que será usada como
                                                   título da janela de exibição
                                                   da imagem (String)
             # Returns
@@ -91,7 +91,8 @@ class image_view_functions():
 
         try:
             # MOSTRANDO IMAGEM ATUAL
-            plt.imshow(img_atual)
+            plt.imshow(image)
+            plt.title(window_name)
 
             # AGUARDA A AÇÃO DO USUÁRIO DE FECHAR A JANELA DE IMAGEM
             plt.show()

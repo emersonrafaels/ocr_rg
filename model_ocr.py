@@ -65,25 +65,25 @@ class Execute_OCR_RG(object):
         # 6 - DEFININDO REGEX
 
         # SELECIONA APENAS LETRAS
-        self.regex_only_letters = r'[^A-zÀ-ù]'
+        self.regex_only_letters = settings.REGEX_ONLY_LETTERS
 
         # SELECIONA APENAS NÚMEROS
-        self.regex_only_numbers = r'[^\d]'
+        self.regex_only_numbers = settings.REGEX_ONLY_NUMBERS
 
         # SELECIONA APENAS LETRAS E NÚMEROS
-        self.regex_only_letters_numbers = r'[^A-Za-z0-9]+'
+        self.regex_only_letters_numbers = settings.REGEX_ONLY_LETTERS_NUMBERS
 
         # SELECIONA APENAS LETRAS, PONTOS, BARRAS, TRAÇOS E NÚMEROS
-        self.regex_only_letters_numbers_dot_bars_dashes = r'[^A-Za-z0-9\-.\/]'
+        self.regex_only_letters_numbers_dot_bars_dashes = settings.REGEX_ONLY_LETTERS_NUMBERS_DOT_BARS_DASHES
 
         # SELECIONA APENAS A LETRA X, PONTOS, BARRAS, TRAÇOS E NÚMEROS
-        self.regex_only_x_numbers_dot_bars_dashes = r'[^xX0-9\-.\/]'
+        self.regex_only_x_numbers_dot_bars_dashes = settings.REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES
 
         # SELECIONA APENAS DATAS
-        self.regex_only_dates = r'[0-9]{1,2}(\/|-)[A-Za-z0-9]{1,3}(\/|-)[0-9]{2,4}'
+        self.regex_only_dates = settings.REGEX_ONLY_DATES
 
         # SELECIONA APENAS LETRAS, PONTO (.) E TRAÇO (-)
-        self.regex_only_letters_dot_dash = r'[^(A-zÀ-ù)(\-)(.)]'
+        self.regex_only_letters_dot_dash = settings.REGEX_ONLY_LETTERS_DOT_DASH
 
 
     @property
@@ -164,11 +164,15 @@ class Execute_OCR_RG(object):
         # FORMATANDO O RESULTADO NO FORMATO DE LISTA
         try:
             for field, nome_template, x1, y1, x2, y2, doc_verso in result:
-                x1 //= int(600/self.__output_size)
-                y1 //= int(600/self.__output_size)
-                x2 //= int(600/self.__output_size)
-                y2 //= int(600/self.__output_size)
-                result_coords.append([field, nome_template, doc_verso, (x1, y1), (x2, y2)])
+
+                # VERIFICANDO SE O CAMPO ENCONTRA-SE ATIVO NESSE MODELO
+                if field in [value[0] for value in self.FIELDS]:
+
+                    x1 //= int(600/self.__output_size)
+                    y1 //= int(600/self.__output_size)
+                    x2 //= int(600/self.__output_size)
+                    y2 //= int(600/self.__output_size)
+                    result_coords.append([field, nome_template, doc_verso, (x1, y1), (x2, y2)])
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
@@ -422,25 +426,26 @@ class Execute_OCR_RG(object):
         bounding_positions = {}
 
         # PERCORRENDO CADA UM DOS CAMPOS E OBTENDO AS SUAS RESPECTIVAS COORDENADAS
-        for field, ((x1, y1), (x2, y2)) in zip(self.FIELDS, self.COORDS):
+        for field in self.COORDS:
 
             # OBTENDO OS BOUNDING POSITIONS
-            bounding_positions['x1'] = x1
-            bounding_positions['y1'] = y1
-            bounding_positions['x2'] = x2
-            bounding_positions['y2'] = y2
+            bounding_positions['x1'] = field[3][0]
+            bounding_positions['y1'] = field[3][1]
+            bounding_positions['x2'] = field[4][0]
+            bounding_positions['y2'] = field[4][1]
 
             # APLICANDO O CROP
-            roi = img[y1:y2, x1:x2]
+            roi = img[bounding_positions['y1']:bounding_positions['y2'],
+                  bounding_positions['x1']:bounding_positions['x2']]
 
             # REALIZANDO O OCR
-            info_extracted[field] = ocr_functions().Orquestra_OCR(roi)
+            info_extracted[field[0]] = ocr_functions().Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
-            # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
+            image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
-            # image_view_functions.view_image_with_coordinates(roi)
+            image_view_functions.view_image_with_coordinates(roi, win)
 
         return info_extracted
 
@@ -495,14 +500,17 @@ class Execute_OCR_RG(object):
                                    interpolation=cv2.INTER_AREA)
 
         # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
-        image_view_functions.view_image(img_original, nome_janela="ORIGINAL")
-        image_view_functions.view_image(cropped_image, nome_janela="CROPPED")
-        image_view_functions.view_image(warped_img, nome_janela="WARPED")
+        image_view_functions.view_image(img_original, window_name="ORIGINAL")
+        image_view_functions.view_image(cropped_image, window_name="CROPPED")
+        image_view_functions.view_image(warped_img, window_name="WARPED")
 
-        # APLICANDO O OCR
-        info_extracted = self.execute_ocr(cropped_image)
+        # APLICANDO O OCR - CAMPO A CAMPO
+        info_field = self.execute_ocr(cropped_image)
 
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
-        info_extracted = self.orchestra_pos_processing(info_extracted)
+        info_field = self.orchestra_pos_processing(info_extracted)
 
-        return info_extracted
+        # APLICANDO O OCR NO DOCUMENTO INTEIRO
+        info_doc = ocr_functions().Orquestra_OCR(cropped_image)
+
+        return info_field, info_doc

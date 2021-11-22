@@ -34,6 +34,7 @@ import imutils
 
 from UTILS.generic_functions import get_date_time_now
 from UTILS.image_read import read_image_gray
+from UTILS.image_view import image_view_functions
 
 
 class Image_Pre_Processing(object):

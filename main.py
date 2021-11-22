@@ -47,14 +47,17 @@ def main_ocr_rg(image):
     rg_reader = Execute_OCR_RG(pre_processing)
 
     # REALIZANDO O FLUXO COMPLETO
-    output_rg = rg_reader.execute_pipeline_ocr(image)
+    output_rg_field, output_rg_doc = rg_reader.execute_pipeline_ocr(image)
 
-    print(output_rg)
+    print("RESULTADO - MODELO 2")
+    print(output_rg_field)
+    print("RESULTADO - MODELO 3")
+    print(output_rg_doc)
 
 
 if __name__ == "__main__":
 
-    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\MariaEduarda_Copia.png'
+    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Jose_Clerton.png'
 
     main_ocr_rg(caminho_imagem)
 
