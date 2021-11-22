@@ -49,9 +49,9 @@ def main_ocr_rg(image):
     # REALIZANDO O FLUXO COMPLETO
     output_rg_field, output_rg_doc = rg_reader.execute_pipeline_ocr(image)
 
-    print("RESULTADO - MODELO 2")
+    print("RESULTADO - MODELO 2:")
     print(output_rg_field)
-    print("RESULTADO - MODELO 3")
+    print("RESULTADO - MODELO 3:")
     print(output_rg_doc)
 
 

@@ -445,7 +445,7 @@ class Execute_OCR_RG(object):
             image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
-            image_view_functions.view_image_with_coordinates(roi, win)
+            image_view_functions.view_image_with_coordinates(roi, window_name=field)
 
         return info_extracted
 
@@ -489,8 +489,11 @@ class Execute_OCR_RG(object):
 
     def execute_pipeline_ocr(self, img_path):
 
-        # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR
-        info_extracted = {}
+        # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR - CAMPO A CAMPO
+        info_field = {}
+
+        # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - DOCUMENTO INTEIRO
+        info_doc = ""
 
         # REALIZANDO O PRÉ PROCESSAMENTO
         img_original, cropped_image, warped_img = self.__pre_processing.run(img_path)
@@ -508,9 +511,9 @@ class Execute_OCR_RG(object):
         info_field = self.execute_ocr(cropped_image)
 
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
-        info_field = self.orchestra_pos_processing(info_extracted)
+        info_field = self.orchestra_pos_processing(info_field)
 
         # APLICANDO O OCR NO DOCUMENTO INTEIRO
-        info_doc = ocr_functions().Orquestra_OCR(cropped_image)
+        info_doc = ocr_functions().Orquestra_OCR(img_original)
 
         return info_field, info_doc
