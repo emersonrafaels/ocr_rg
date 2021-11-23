@@ -100,6 +100,37 @@ def converte_int(valor_para_converter):
         return None
 
 
+def read_txt(data_dir):
+
+    """
+
+        REALIZA LEITURA DA BASE (TXT)
+
+        # Arguments
+            data_dir                      - Required : Diretório da base a ser lida (String)
+
+        # Returns
+            validador                     - Required : Validação da função (Boolean)
+            data                          - Required : Dados lidos (List)
+
+    """
+
+    # INICIANDO O VALIDADOR
+    validador = False
+
+    # INICIANDO A LISTA QUE ARMAZENARÁ O RESULTADO DA LEITURA
+    data = pd.DataFrame()
+
+    try:
+        data = open(data_dir, 'r', encoding='utf8').read()
+
+        validador = True
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+    return validador, data
+
+
 def read_csv(data_dir):
 
     """
