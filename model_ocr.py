@@ -802,17 +802,20 @@ class Execute_OCR_RG(object):
 
                     if result_similarity[0]:
 
-                        if result_similarity[1][0][1] >= max_similarity:
+                        # PERCORRENDO TODOS OS RESULTADOS DE RETORNO DE SIMILARIDADE
+                        for result in result_similarity[-1]:
 
-                            # ARMAZENANDO O RESULTADO
-                            result_max_similarity.append([value_j, result_similarity[1][0]])
+                            if result[-1] >= max_similarity:
 
-                            # ATUALIZANDO O VALOR DE MÁXIMA SIMILARIDADE
-                            max_similarity = result_max_similarity[-1][1][1]
+                                # ARMAZENANDO O RESULTADO
+                                result_max_similarity.append([value_j, result])
 
-                            if max_similarity == 100:
-                                # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
-                                return result_max_similarity[-1][1]
+                                # ATUALIZANDO O VALOR DE MÁXIMA SIMILARIDADE
+                                max_similarity = result[-1]
+
+                                if max_similarity == 100:
+                                    # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
+                                    return result
 
         # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
         return Execute_OCR_RG.get_min_dif_len_letters(text, result_max_similarity)
@@ -992,6 +995,63 @@ class Execute_OCR_RG(object):
         return info_extracted
 
 
+    def execute_ocr_box(self, img):
+
+        """
+
+            REALIZA O OCR NO DOCUMENTO USANDO BOUNDING BOX, PARA ISSO:
+            
+                1) DETECTA BOXES DE TEXTOS
+                2) REALIZA O OCR SOBRE CADA UM DESSES BOXES
+
+            # Arguments
+                img                - Required : Imagem para aplicar o OCR (Array)
+
+            # Returns
+                info_extracted     - Required : Resultando contendo o OCR
+                                                para cada um dos campos (Dict)
+
+        """
+
+        # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR
+        info_extracted = {}
+
+        # INICIANDO O DICT DE POSIÇÕES
+        bounding_positions = {}
+
+        # REALIZANDO O OCR (OBTENDO OS DADOS DO OCR)
+        info_doc = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(img)
+
+        # PERCORRENDO CADA UM DOS CAMPOS E OBTENDO AS SUAS RESPECTIVAS COORDENADAS
+        for idx, box in enumerate(range(len(info_doc["text"]))):
+
+            # FORMATANDO O TEXTO
+            text = info_doc["text"][idx].strip()
+
+            if text != "":
+
+                # OBTENDO OS BOUNDING POSITIONS
+                bounding_positions['x1'] = info_doc["left"][idx]
+                bounding_positions['y1'] = info_doc["top"][idx]
+                bounding_positions['x2'] = info_doc["width"][idx] + bounding_positions['x1']
+                bounding_positions['y2'] = info_doc["height"][idx] + bounding_positions['y1']
+
+                # APLICANDO O CROP
+                roi = img[bounding_positions['y1']:bounding_positions['y2'],
+                      bounding_positions['x1']:bounding_positions['x2']]
+
+
+                # VISUALIZANDO O BOUNDING BOX
+                image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img,
+                                                                                                          bounding_positions),
+                                                                 window_name=text)
+
+                # VISUALIZANDO O CROP
+                # image_view_functions.view_image_with_coordinates(roi, window_name=text)
+
+        return info_extracted
+
+
     def orchestra_pos_processing(self, info_extracted):
 
         """
@@ -1045,6 +1105,9 @@ class Execute_OCR_RG(object):
         # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - DOCUMENTO INTEIRO
         info_doc = ""
 
+        # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - BOUNDING BOX
+        info_box = ""
+
         # REALIZANDO O PRÉ PROCESSAMENTO
         img_original, cropped_image, warped_img = self.__pre_processing.run(img_path)
 
@@ -1065,5 +1128,8 @@ class Execute_OCR_RG(object):
 
         # APLICANDO O OCR NO DOCUMENTO INTEIRO
         info_doc = ocr_functions().Orquestra_OCR(img_original)
+
+        # APLICANDO O OCR - BOUNDING BOX
+        info_box = self.execute_ocr_box(img_original)
 
         return info_field, info_doc
