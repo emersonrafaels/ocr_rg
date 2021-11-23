@@ -64,30 +64,31 @@ class Execute_OCR_RG(object):
         self.CITY_STATE = self.__get_uf_state()
 
         # 6 - DEFININDO REGEX
+        self.regex = self.__get_regex()
 
         # SELECIONA APENAS LETRAS
-        self.regex_only_letters = settings.REGEX_ONLY_LETTERS
+        self.regex_only_letters = self.__get_value_regex("REGEX_ONLY_LETTERS")
 
         # SELECIONA APENAS NÚMEROS
-        self.regex_only_numbers = settings.REGEX_ONLY_NUMBERS
+        self.regex_only_numbers = self.__get_value_regex("REGEX_ONLY_NUMBERS")
 
         # SELECIONA APENAS LETRAS E NÚMEROS
-        self.regex_only_letters_numbers = settings.REGEX_ONLY_LETTERS_NUMBERS
+        self.regex_only_letters_numbers = self.__get_value_regex("REGEX_ONLY_LETTERS_NUMBERS")
 
         # SELECIONA APENAS LETRAS, PONTOS, BARRAS, TRAÇOS E NÚMEROS
-        self.regex_only_letters_numbers_dot_bars_dashes = settings.REGEX_ONLY_LETTERS_NUMBERS_DOT_BARS_DASHES
+        self.regex_only_letters_numbers_dot_bars_dashes = self.__get_value_regex("REGEX_ONLY_LETTERS_NUMBERS_DOT_BARS_DASHES")
 
         # SELECIONA APENAS A LETRA X, PONTOS, BARRAS, TRAÇOS E NÚMEROS
-        self.regex_only_x_numbers_dot_bars_dashes = settings.REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES
+        self.regex_only_x_numbers_dot_bars_dashes = self.__get_value_regex("REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES")
 
         # SELECIONA APENAS A LETRA X E NÚMEROS
-        self.regex_only_x_numbers = settings.REGEX_ONLY_X_NUMBERS
+        self.regex_only_x_numbers = self.__get_value_regex("REGEX_ONLY_X_NUMBERS")
 
         # SELECIONA APENAS DATAS
-        self.regex_only_dates = settings.REGEX_ONLY_DATES
+        self.regex_only_dates = self.__get_value_regex("REGEX_ONLY_DATES")
 
         # SELECIONA APENAS LETRAS, PONTO (.) E TRAÇO (-)
-        self.regex_only_letters_dot_dash = settings.REGEX_ONLY_LETTERS_DOT_DASH
+        self.regex_only_letters_dot_dash = self.__get_value_regex("REGEX_ONLY_LETTERS_DOT_DASH")
 
         # 7 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
         self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH
@@ -225,6 +226,73 @@ class Execute_OCR_RG(object):
 
         # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
         return df_municipios_uf
+
+
+    def __get_regex(self):
+
+        """
+
+            OBTÉM TODOS OS REGEX DISPONÍVEIS NO BANCO DE DADOS
+
+            # Arguments
+
+            # Returns
+                list_regex             - Required : Lista contendo os regex disponíveis (List)
+
+        """
+
+        # INICIANDO A VARIÁVEL RESULTANTE
+        list_regex = []
+
+        try:
+            # DEFININDO OS PARÂMETROS DE CONEXÃO
+            caminho_bd_bds = settings.DIR_BD_OCR
+            ssql_bds = settings.QUERY_REGEX
+            params_bds = (None,)
+            tipo_query_bds = settings.QUERY_TYPE_REGEX
+
+            # EXECUTANDO A QUERY E OBTENDO O RESULTADO
+            list_regex = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)[1]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+        return list_regex
+
+
+    def __get_value_regex(self, current_regex):
+
+        """
+
+            OBTÉM O VALOR DE UMA REGEX (CURRENT_REGEX)
+            DENTRE A LISTA DE REGEX DISPONÍVEIS
+
+            # Arguments
+                current_regex          - Required : Valor da regex buscada (String)
+
+            # Returns
+                value_regex            - Required : Valor da regex buscada (String)
+
+        """
+
+        # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O VALOR DA REGEX
+        value_regex = ""
+
+        try:
+            # PROCURANDO O VALOR DE REGEX DENTRO A LISTA DE REGEX DISPONÍVEIS
+            value_regex = [value for value in self.regex if value[0] == current_regex]
+
+            if len(value_regex):
+                value_regex = value_regex[0][-1]
+            else:
+                value_regex = settings[current_regex]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        # RETORNANDO A TUPLA CONTENDO O VALOR DO REGEX
+        return value_regex
 
 
     def decorator_valid_similarity(func):
@@ -432,10 +500,10 @@ class Execute_OCR_RG(object):
             output = re.sub(self.regex_only_letters_numbers_dot_bars_dashes, "", field).replace("  ", " ").strip()
 
             # BUSCANDO MATCHS DE DATAS
-            match = re.match(self.regex_only_dates, output)
+            matches = re.finditer(self.regex_only_dates, output, re.MULTILINE)
 
-            if match:
-                output = match[0]
+            if matches:
+                output = [match[0] for match in matches][0]
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
@@ -504,7 +572,7 @@ class Execute_OCR_RG(object):
 
                 if value_j != "":
 
-                    # OBTENDO A CIDADE E O ESTADO CONTIDO NO TEXTO
+                    # OBTENDO O VALOR DE MAIOR SIMILARIDADE
                     result_similarity = Execute_OCR_RG.get_similitary(self,
                                                                       value_j,
                                                                       list_values_similitary,
