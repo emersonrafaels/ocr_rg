@@ -435,7 +435,7 @@ class Execute_OCR_RG(object):
 
         for value_x in name_input.split(" "):
 
-            if value_x != "" and len(value_x) >= 3:
+            if value_x != "" and len(value_x) >= 2:
 
                 result_similarity = Execute_OCR_RG.get_similitary(self,
                                                                   value_x,
@@ -445,21 +445,28 @@ class Execute_OCR_RG(object):
                                                                   self.limit_result_best_similar)
 
                 if result_similarity[0]:
-                    print(result_similarity[-1])
 
-                    # ARMAZENANDO O NOME SALVO
-                    first_name = value_x
+                    # VERIFICANDO SE O MATCH OCORREU PARA LEN(NOME) < 4, COM VALOR DE 100
+                    # CASO NÃO TENHA SIDO, EXCLUI A OPÇÃO
+                    if result_similarity[-1][0][-1] < 100 and len(value_x) <= 3:
+                        # CASO RECUSADO, CONTINUA BUSCANDO UM NOME VÁLIDO
+                        continue
+                    else:
+                        print(result_similarity[-1])
 
-                    # OBTENDO O GÊNERO
-                    gender = [value[1].upper() for value in list_first_names if
-                              value[0].upper() == result_similarity[-1][0][0].upper()][0]
+                        # ARMAZENANDO O NOME SALVO
+                        first_name = value_x
 
-                    return first_name, gender
+                        # OBTENDO O GÊNERO
+                        gender = [value[1].upper() for value in list_first_names if
+                                  value[0].upper() == result_similarity[-1][0][0].upper()][0]
+
+                        return first_name, gender
 
         return first_name, gender
 
 
-    def last_name_valid(self, name_input, list_last_names):
+    def last_name_valid(self, complete_name_input, first_name_input, list_last_names):
 
         """
 
@@ -469,8 +476,9 @@ class Execute_OCR_RG(object):
             SE ESSE VALOR É UM SOBRENOME
 
             # Arguments
-                name_input         - Required : Nome completo a ser analisado (String)
-                list_last_names    - Required : Lista de sobrenomes (List)
+                complete_name_input  - Required : Nome completo a ser analisado (String)
+                first_name_input     - Required : Primeiro nome validado (String)
+                list_last_names      - Required : Lista de sobrenomes (List)
 
             # Returns
                 last_name          - Required : Sobrenomes válidos (String)
@@ -481,20 +489,27 @@ class Execute_OCR_RG(object):
         # INICIANDO A VARIÁVEL QUE OS SOBRENOMES VÁLIDOS
         last_name = ""
 
-        for value_x in name_input.split(" "):
+        for value_x in complete_name_input.split(" "):
 
-            if value_x != "" and len(value_x) > 3:
+            if value_x != "" and len(value_x) >= 3:
 
-                result_similarity = Execute_OCR_RG.get_similitary(self,
-                                                                  value_x,
-                                                                  [value[0] for value in list_last_names],
-                                                                  self.default_percent_match,
-                                                                  self.similarity_pre_processing,
-                                                                  self.limit_result_best_similar)
+                # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
+                if value_x != first_name_input:
 
-                if result_similarity[0]:
-                    print(value_x, result_similarity[-1])
+                    result_similarity = Execute_OCR_RG.get_similitary(self,
+                                                                      value_x,
+                                                                      [value[0] for value in list_last_names],
+                                                                      self.default_percent_match,
+                                                                      self.similarity_pre_processing,
+                                                                      self.limit_result_best_similar)
 
+                    if result_similarity[0]:
+                        print(value_x, result_similarity[-1])
+
+                        # ARMAZENANDO O NOME SALVO
+                        last_name += value_x + " "
+
+                else:
                     # ARMAZENANDO O NOME SALVO
                     last_name += value_x + " "
 
@@ -572,6 +587,8 @@ class Execute_OCR_RG(object):
             # OBTENDO O PRIMEIRO NOME VÁLIDO
             first_name, gender = Execute_OCR_RG.get_first_name_valid(self, name_input,
                                                                      self.data_first_names_gender)
+
+            # FILTRANDO O NOME CONFORME O PRIMEIRO NOME VÁLIDO
             result_first_name = name_input[name_input.find(first_name):]
 
             print(result_first_name)
@@ -579,13 +596,14 @@ class Execute_OCR_RG(object):
 
             # VALIDANDO OS SOBRENOMES
             result_last_name = Execute_OCR_RG.last_name_valid(self, result_first_name,
+                                                              first_name,
                                                               self.data_last_names)
             print(result_last_name)
 
             print("-" * 50)
 
             # ATUALIZADO O NOME
-            info_extracted[field] = result_first_name
+            info_extracted[field] = result_last_name
 
         return info_extracted
 
