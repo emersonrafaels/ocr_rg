@@ -29,14 +29,16 @@ __data_atualizacao__ = "16/10/2021"
 
 
 from inspect import stack
+import unidecode
 import re
 import warnings
+
 
 import cv2
 from dynaconf import settings
 
 from UTILS.check_similarity import Check_Similarity
-from UTILS.generic_functions import format_values_int, drop_duplicates_list
+from UTILS.generic_functions import format_values_int, drop_duplicates_list, read_txt
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
 from UTILS.conectores_db.main import conectores
@@ -98,6 +100,14 @@ class Execute_OCR_RG(object):
 
         # 9 - INICIANDO A VARIÁVEL QUE CONTÉM O LIMIT NA CHAMADA DE MÁXIMAS SIMILARIDADES
         self.limit_result_best_similar = settings.DEFAULT_LIMIT_RESULT_BEST_SIMILAR
+
+        # 10 - REALIZANDO A LEITURA DO BANCO DE DADOS DE NOMES - GENEROS
+        self.data_first_names_gender = self.__get_data_names(settings.DIR_DATA_FIRST_NAMES_GENDER,
+                                                                 value_split=",")
+
+        # 11 - REALIZANDO A LEITURA DO BANCO DE DADOS DE SOBRENOMES
+        self.data_last_names = self.__get_data_names(settings.DIR_DATA_LAST_NAMES,
+                                                         value_split="-")
 
 
     @property
@@ -261,6 +271,41 @@ class Execute_OCR_RG(object):
         return list_regex
 
 
+    def __get_data_names(self, dir_data, value_split):
+
+        """
+
+            1) REALIZA A LEITURA DO BANCO DE DADOS DE NOMES
+            2) REALIZA A FORMAAÇÃO DA LISTA, DE ACORDO COM UM VALOR DE SPLIT DEFINIDO
+
+            # Arguments
+                dir_data              - Required : Diretório da base a ser lida (String)
+                value_split           - Required : Caracter utilizada para split da lista (String)
+
+            # Returns
+                list_result          - Required : Lista resultado (List)
+
+        """
+
+        # INICIANDO A VARIÁVEL RESULTANTE
+        list_result = []
+
+        try:
+            # REALIZANDO A LEITURA DO TXT CONTENDO OS DADOS
+            validador, data = read_txt(dir_data)
+
+            if validador:
+
+                # REALIZANDO A CONVERSÃO
+                list_result = [name_sex.split(value_split) for name_sex in data.split("\n")]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        # RETORNANDO A TUPLA CONTENDO O RESULTADO FINAL APÓS LEITURA E FORMATAÇÃO
+        return list_result
+
+
     def __get_value_regex(self, current_regex):
 
         """
@@ -365,6 +410,97 @@ class Execute_OCR_RG(object):
         pass
 
 
+    def get_first_name_valid(self, name_input, list_first_names):
+
+        """
+
+            1) RECEBE UMA STRING CONTENDO UM NOME COMPLTO
+            2) RECEBE UMA LISTA DE NOMES
+            3) VALIDA SE DENTRO OS VALORES DA STRING,
+            HÁ ALGUM VÁLIDO COMO PRIMEIRO NOME.
+
+            # Arguments
+                name_input         - Required : Nome completo a ser analisado (String)
+                list_first_names   - Required : Lista de primeiros nomes e generos (List)
+
+            # Returns
+                first_name         - Required : Primeiro nome válido (String)
+                gender             - Required : Gênero do nome validado (Char)
+
+        """
+
+        # INICIANDO A VARIÁVEL QUE O PRIMEIRO NOME VÁLIDO
+        first_name = ""
+        gender = ""
+
+        for value_x in name_input.split(" "):
+
+            if value_x != "" and len(value_x) >= 3:
+
+                result_similarity = Execute_OCR_RG.get_similitary(self,
+                                                                  value_x,
+                                                                  [value[0] for value in list_first_names],
+                                                                  self.default_percent_match,
+                                                                  self.similarity_pre_processing,
+                                                                  self.limit_result_best_similar)
+
+                if result_similarity[0]:
+                    print(result_similarity[-1])
+
+                    # ARMAZENANDO O NOME SALVO
+                    first_name = value_x
+
+                    # OBTENDO O GÊNERO
+                    gender = [value[1].upper() for value in list_first_names if
+                              value[0].upper() == result_similarity[-1][0][0].upper()][0]
+
+                    return first_name, gender
+
+        return first_name, gender
+
+
+    def last_name_valid(self, name_input, list_last_names):
+
+        """
+
+            1) RECEBE UMA STRING CONTENDO UM NOME COMPLTO
+            2) RECEBE UMA LISTA DE SOBRENOMES
+            3) VALIDA CADA UM DOS VALORES DO NOME,
+            SE ESSE VALOR É UM SOBRENOME
+
+            # Arguments
+                name_input         - Required : Nome completo a ser analisado (String)
+                list_last_names    - Required : Lista de sobrenomes (List)
+
+            # Returns
+                last_name          - Required : Sobrenomes válidos (String)
+                gender             - Required : Gênero do nome validado (Char)
+
+        """
+
+        # INICIANDO A VARIÁVEL QUE OS SOBRENOMES VÁLIDOS
+        last_name = ""
+
+        for value_x in name_input.split(" "):
+
+            if value_x != "" and len(value_x) > 3:
+
+                result_similarity = Execute_OCR_RG.get_similitary(self,
+                                                                  value_x,
+                                                                  [value[0] for value in list_last_names],
+                                                                  self.default_percent_match,
+                                                                  self.similarity_pre_processing,
+                                                                  self.limit_result_best_similar)
+
+                if result_similarity[0]:
+                    print(value_x, result_similarity[-1])
+
+                    # ARMAZENANDO O NOME SALVO
+                    last_name += value_x + " "
+
+        return last_name.strip()
+
+
     def __postprocess_string(self, field):
 
         """
@@ -385,11 +521,73 @@ class Execute_OCR_RG(object):
         try:
             # MANTENDO APENAS LETRAS E TORNANDO O TEXTO UPPERCASE
             output = re.sub(self.regex_only_letters, " ", field).replace("  ", " ").strip().upper()
+
+            # RETIRANDO OS ACENTOS
+            output = unidecode.unidecode(output)
+
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
             output = field
 
         return output
+
+
+    def __postprocess_names(self, info_extracted):
+
+        """
+
+            APLICA TÉCNICAS DE PÓS PROCESSAMENTO:
+
+                1) RETIRA VALORES QUE NÃO SÃO NOME E/OU SOBRENOMES.
+
+            # Arguments
+                field              - Required : Valor a ser pós processado (String)
+
+            # Returns
+                output             - Required : Valor após processamento (String)
+
+        """
+
+        dict_names = ["NOME", "NOME_MAE", "NOME_PAI"]
+
+        for field in dict_names:
+
+            # FILTRANDO O VALOR DO CAMPO ATUAL
+            name_input = info_extracted[field]
+
+            if " E " in name_input and field == "NOME_MAE":
+
+                result_split = name_input.split(" E ")
+
+                # ATUALIZANDO O VALOR DO CAMPO NOME_MAE
+                name_input = result_split[-1]
+
+                # INSERINDO O VALOR ANTES DO E NO CAMPO NOME_PAI
+                if name_input.split(" E ")[0] not in dict_names["NOME_PAI"]:
+                    dict_names["NOME_PAI"] += " " + result_split[0]
+
+            print("CAMPO ATUAL: {}".format(field))
+            print("VALOR DE INPUT: {}".format(name_input))
+
+            # OBTENDO O PRIMEIRO NOME VÁLIDO
+            first_name, gender = Execute_OCR_RG.get_first_name_valid(self, name_input,
+                                                                     self.data_first_names_gender)
+            result_first_name = name_input[name_input.find(first_name):]
+
+            print(result_first_name)
+            print("GÊNERO: {}".format(gender))
+
+            # VALIDANDO OS SOBRENOMES
+            result_last_name = Execute_OCR_RG.last_name_valid(self, result_first_name,
+                                                              self.data_last_names)
+            print(result_last_name)
+
+            print("-" * 50)
+
+            # ATUALIZADO O NOME
+            info_extracted[field] = result_first_name
+
+        return info_extracted
 
 
     def __postprocess_num_rg(self, field):
@@ -495,15 +693,19 @@ class Execute_OCR_RG(object):
 
         """
 
+        output = []
+
         try:
             # MANTENDO APENAS LETRAS, NÚMEROS, PONTOS ('.') BARRAS ('/') E TRAÇOS ('-')
             output = re.sub(self.regex_only_letters_numbers_dot_bars_dashes, "", field).replace("  ", " ").strip()
 
             # BUSCANDO MATCHS DE DATAS
-            matches = re.finditer(self.regex_only_dates, output, re.MULTILINE)
+            for match in re.finditer(self.regex_only_dates, output, re.MULTILINE):
 
-            if matches:
-                output = [match[0] for match in matches][0]
+                # REALIZANDO O MATCH
+                output = match[0]
+
+                return output
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
@@ -809,6 +1011,9 @@ class Execute_OCR_RG(object):
         for column in ["NOME", "NOME_MAE", "NOME_PAI", "CIDADE_ORIGEM",
                        "ESTADO_ORIGEM", "CIDADE_NASC", "ESTADO_NASC"]:
             info_extracted[column] = self.__postprocess_string(info_extracted[column])
+
+        # APLICANDO PÓS PROCESSAMENTO DE NOMES
+        info_extracted = self.__postprocess_names(info_extracted)
 
         # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted

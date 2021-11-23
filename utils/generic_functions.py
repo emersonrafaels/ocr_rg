@@ -119,7 +119,7 @@ def read_txt(data_dir):
     validador = False
 
     # INICIANDO A LISTA QUE ARMAZENARÁ O RESULTADO DA LEITURA
-    data = pd.DataFrame()
+    data = []
 
     try:
         data = open(data_dir, 'r', encoding='utf8').read()
