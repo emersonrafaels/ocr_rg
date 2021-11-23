@@ -491,10 +491,11 @@ class Execute_OCR_RG(object):
 
         for value_x in complete_name_input.split(" "):
 
-            if value_x != "" and len(value_x) >= 3:
+            # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
+            if value_x != first_name_input and value_x not in ["DO", "DA"]:
 
                 # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
-                if value_x != first_name_input:
+                if value_x != "" and len(value_x) >= 3:
 
                     result_similarity = Execute_OCR_RG.get_similitary(self,
                                                                       value_x,
@@ -509,9 +510,9 @@ class Execute_OCR_RG(object):
                         # ARMAZENANDO O NOME SALVO
                         last_name += value_x + " "
 
-                else:
-                    # ARMAZENANDO O NOME SALVO
-                    last_name += value_x + " "
+            else:
+                # ARMAZENANDO O NOME SALVO
+                last_name += value_x + " "
 
         return last_name.strip()
 
