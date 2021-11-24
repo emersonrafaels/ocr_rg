@@ -57,7 +57,7 @@ def main_ocr_rg(image):
 
 if __name__ == "__main__":
 
-    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Roberto_Guedes_Verso.png'
+    caminho_imagem = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Valdineia_Aparecida.png'
 
     main_ocr_rg(caminho_imagem)
 
