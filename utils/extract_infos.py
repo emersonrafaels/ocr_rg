@@ -303,7 +303,7 @@ class Extract_Infos():
                     min_dif_len_letters = dif_len_string
         else:
             # RETORNA-SE O TEXTO CONTENDO O MAIOR NÚMERO DE CARACTERES
-            result_max_similarity = [max(text.split(" "), key=len), '_']
+            result_max_similarity = [max(text.split(" "), key=len), 0]
 
         # RETORNANDO O VALOR DE MÁXIMA SIMILARIDADE
         return result_max_similarity

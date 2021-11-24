@@ -168,6 +168,10 @@ class Execute_Process_Location():
             # OBTENDO O VALOR DE MÁXIMA SIMILARIDADE
             result_max_similarity = self.orchestra_extract_infos.get_max_similarity(field, list_values_similitary)
 
+            # VERIFICANDO SE HOUVE RESULTADO DE SIMILARIDADE
+            if result_max_similarity[-1] == 0:
+                result_max_similarity = ["", 0]
+
             if current_field == "state":
                 # OBTENDO O VALOR RESULTANTE
                 state = result_max_similarity[0]
