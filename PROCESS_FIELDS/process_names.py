@@ -158,7 +158,7 @@ class Execute_Process_Names():
         for value_x in complete_name_input.split(" "):
 
             # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
-            if value_x != first_name_input and value_x not in ["DO", "DA"]:
+            if value_x != first_name_input and value_x not in ["DO", "DA", "DE", "DI"]:
 
                 # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
                 if value_x != "" and len(value_x) >= 3:
