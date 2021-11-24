@@ -100,7 +100,7 @@ def converte_int(valor_para_converter):
         return None
 
 
-def read_txt(data_dir):
+def read_txt(data_dir, encoding=None):
 
     """
 
@@ -108,6 +108,7 @@ def read_txt(data_dir):
 
         # Arguments
             data_dir                      - Required : Diretório da base a ser lida (String)
+            encoding                      - Optional : Encoding utilizado (String)
 
         # Returns
             validador                     - Required : Validação da função (Boolean)
@@ -122,7 +123,10 @@ def read_txt(data_dir):
     data = []
 
     try:
-        data = open(data_dir, 'r', encoding='utf8').read()
+        if encoding is not None:
+            data = open(data_dir, 'r', encoding=encoding).read()
+        else:
+            data = open(data_dir, 'r').read()
 
         validador = True
     except Exception as ex:

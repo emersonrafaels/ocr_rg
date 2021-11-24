@@ -12,11 +12,13 @@ class Execute_Process_Names():
 
         # 1 - REALIZANDO A LEITURA DO BANCO DE DADOS DE NOMES - GENEROS
         self.data_first_names_gender = self.__get_data_names(settings.DIR_DATA_FIRST_NAMES_GENDER,
-                                                             value_split=",")
+                                                             value_split=",",
+                                                             encoding='cp1252')
 
         # 2 - REALIZANDO A LEITURA DO BANCO DE DADOS DE SOBRENOMES
         self.data_last_names = self.__get_data_names(settings.DIR_DATA_LAST_NAMES,
-                                                     value_split="-")
+                                                     value_split="-",
+                                                     encoding='utf8')
 
         # 3 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
         self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH
@@ -28,7 +30,7 @@ class Execute_Process_Names():
         self.limit_result_best_similar = settings.DEFAULT_LIMIT_RESULT_BEST_SIMILAR
 
 
-    def __get_data_names(self, dir_data, value_split):
+    def __get_data_names(self, dir_data, value_split, encoding):
 
         """
 
@@ -38,6 +40,7 @@ class Execute_Process_Names():
             # Arguments
                 dir_data              - Required : Diretório da base a ser lida (String)
                 value_split           - Required : Caracter utilizada para split da lista (String)
+                encoding              - Optional : Encoding utilizado (String)
 
             # Returns
                 list_result          - Required : Lista resultado (List)
@@ -49,7 +52,7 @@ class Execute_Process_Names():
 
         try:
             # REALIZANDO A LEITURA DO TXT CONTENDO OS DADOS
-            validador, data = read_txt(dir_data)
+            validador, data = read_txt(dir_data, encoding)
 
             if validador:
 
