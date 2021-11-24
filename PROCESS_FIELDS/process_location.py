@@ -166,7 +166,7 @@ class Execute_Process_Location():
                     list_values_similitary = drop_duplicates_list([value[0] for value in self.CITY_STATE])
 
             # OBTENDO O VALOR DE MÁXIMA SIMILARIDADE
-            result_max_similarity = self.orchestra_extract_infos.get_max_similarity(self, field, list_values_similitary)
+            result_max_similarity = self.orchestra_extract_infos.get_max_similarity(field, list_values_similitary)
 
             if current_field == "state":
                 # OBTENDO O VALOR RESULTANTE

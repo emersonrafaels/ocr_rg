@@ -13,6 +13,15 @@ class Extract_Infos():
         # 1 - DEFININDO REGEX
         self.regex = self.__get_regex()
 
+        # 2 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
+        self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH
+
+        # 3 - DEFININDO SE DEVE HAVER PRÉ PROCESSAMENTO DOS ITENS ANTES DO CÁLCULO DE SEMELHANÇA
+        self.similarity_pre_processing = settings.DEFAULT_PRE_PROCESSING
+
+        # 4 - INICIANDO A VARIÁVEL QUE CONTÉM O LIMIT NA CHAMADA DE MÁXIMAS SIMILARIDADES
+        self.limit_result_best_similar = settings.DEFAULT_LIMIT_RESULT_BEST_SIMILAR
+
 
     def __get_regex(self):
 
