@@ -214,11 +214,15 @@ class Execute_Process_Names():
                 result_split = name_input.split(" E ")
 
                 # ATUALIZANDO O VALOR DO CAMPO NOME_MAE
+                name_before_letter_e = result_split[0]
                 name_input = result_split[-1]
 
                 # INSERINDO O VALOR ANTES DO E NO CAMPO NOME_PAI
-                if name_input.split(" E ")[0] not in dict_names["NOME_PAI"]:
-                    dict_names["NOME_PAI"] += " " + result_split[0]
+                try:
+                    if name_before_letter_e not in info_extracted["NOME_PAI"]:
+                        info_extracted["NOME_PAI"] += " " + name_before_letter_e
+                except Exception as ex:
+                    print(ex)
 
             print("CAMPO ATUAL: {}".format(field))
             print("VALOR DE INPUT: {}".format(name_input))
