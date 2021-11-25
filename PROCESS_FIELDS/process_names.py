@@ -85,7 +85,8 @@ class Execute_Process_Names():
 
         """
 
-        # INICIANDO A VARIÁVEL QUE O PRIMEIRO NOME VÁLIDO
+        # INICIANDO AS VARIÁVEIS DE RETORNO
+        result_similarity = (False, [('', 0)])
         first_name = ""
         gender = ""
 
