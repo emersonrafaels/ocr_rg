@@ -17,6 +17,7 @@ __data_atualizacao__ = "04/07/2021"
 import datetime
 from inspect import stack
 from os import path, makedirs
+import re
 import time
 
 import pandas as pd
@@ -286,4 +287,84 @@ def drop_duplicates_list(input_list):
     """
 
     return list(set(input_list))
+
+
+def replace_month_letters_to_number(value_string, dict_months, pattern_only_leters):
+
+    """
+
+        REALIZA A CONVERSÃO (CASO EXISTA A NECESSIDADE) DE MESES (EX: 'FEV') PARA NÚMERO (EX: '02')
+
+        # Arguments
+            value_string           - Required : Valor a ser convertido (String)
+            dict_months            - Required : Meses e sua respectiva ordem numérica (Dict)
+            pattern_only_leters    - Optional : Pattern para manter apenas letras na string (Regex)
+
+        # Returns
+            value_date             - Required : Valor após conversão (Date)
+
+    """
+
+    # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO FINAL
+    result_date = ""
+
+    try:
+        # VERIFICANDO SE HÁ LETRAS NA DATA (EX: 01/MAR/2021):
+        result_only_letters = re.sub(pattern_only_leters, " ", value_string).replace("  ", " ").strip()
+
+        if len(result_only_letters):
+
+            # BUSCANDO REALIZAR UM SPLIT NA DATA
+            result_split = value_string.split("/")
+
+            # VERIFICANDO SE PARTE DA STRING CONTÉM UM MÊS VÁLIDO
+            result_verified_month = [str(value) for value in result_split if
+                                     str(value).upper() in [month for month in dict_months]]
+
+            if result_verified_month:
+                result_date = value_string.replace(result_verified_month[0],
+                                                   str(dict_months[result_verified_month[0]]).zfill(2))
+
+                return result_date
+
+        return value_string
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+        result_date = value_string
+
+    return result_date
+
+
+def convert_string_to_date(value_string, dict_months, pattern_only_leters):
+
+    """
+
+        REALIZA A CONVERSÃO DE UMA STRING EM FORMATO DATE.
+
+        # Arguments
+            value_string           - Required : Valor a ser convertido (String)
+            dict_months            - Required : Meses e sua respectiva ordem numérica (Dict)
+            pattern_only_leters    - Optional : Pattern para manter apenas letras na string (Regex)
+
+        # Returns
+            value_date             - Required : Valor após conversão (Date)
+
+    """
+
+    # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO FINAL
+    result_date = ""
+
+    try:
+        # VERIFICANDO SE HÁ LETRAS NA DATA (EX: 01/MAR/2021):
+        # CASO HAJA, A FUNÇÃO REALIZARÁ A CONVERSÃO PARA NÚMERO
+        result_date = replace_month_letters_to_number(value_string, dict_months, pattern_only_leters)
+
+        return result_date
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+        result_date = value_string
+
+    return result_date
 
