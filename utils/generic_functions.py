@@ -336,35 +336,58 @@ def replace_month_letters_to_number(value_string, dict_months, pattern_only_lete
     return result_date
 
 
-def convert_string_to_date(value_string, dict_months, pattern_only_leters):
+def convert_to_date(input_value, dict_months, pattern_only_leters):
 
     """
 
-        REALIZA A CONVERSÃO DE UMA STRING EM FORMATO DATE.
+        FUNÇÃO PARA CONVERTER UMA STRING EM FORMATO DATE.
 
         # Arguments
-            value_string           - Required : Valor a ser convertido (String)
+            input_value            - Required : Valor para ser convertido (String)
             dict_months            - Required : Meses e sua respectiva ordem numérica (Dict)
             pattern_only_leters    - Optional : Pattern para manter apenas letras na string (Regex)
 
         # Returns
-            value_date             - Required : Valor após conversão (Date)
+            return_value           - Required : Valor após conversão (Date)
 
     """
-
-    # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO FINAL
-    result_date = ""
 
     try:
         # VERIFICANDO SE HÁ LETRAS NA DATA (EX: 01/MAR/2021):
         # CASO HAJA, A FUNÇÃO REALIZARÁ A CONVERSÃO PARA NÚMERO
-        result_date = replace_month_letters_to_number(value_string, dict_months, pattern_only_leters)
-
-        return result_date
+        input_value = replace_month_letters_to_number(input_value, dict_months, pattern_only_leters)
 
     except Exception as ex:
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
-        result_date = value_string
 
-    return result_date
+    try:
+        if isinstance(input_value, str):
+
+            if len(input_value) == 10:
+
+                # A DATA POSSUI FORMATO DD-MM-YYYY OU DD/MM/YYYY OU DD.MM.YYYY
+                if "/" in input_value:
+                    return datetime.datetime.strptime(input_value, "%d/%m/%Y").date()
+                elif "-" in input_value:
+                    return datetime.datetime.strptime(input_value, "%d-%m-%Y").date()
+                elif "." in input_value:
+                    return datetime.datetime.strptime(input_value, "%d.%m.%Y").date()
+
+            # A DATA POSSUI FORMATO DD-MM-YY OU DD/MM/YY OU DD.MM.YY
+            if "/" in input_value:
+                return datetime.datetime.strptime(input_value, "%d/%m/%y").date()
+            elif "-" in input_value:
+                return datetime.datetime.strptime(input_value, "%d-%m-%y").date()
+            elif "." in input_value:
+                return datetime.datetime.strptime(input_value, "%d.%m.%y").date()
+
+        if isinstance(input_value, datetime):
+            return datetime.date()
+        else:
+            return datetime.datetime.now().date()
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        return datetime.date(1900, 1, 1)
 
