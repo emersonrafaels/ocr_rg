@@ -336,6 +336,44 @@ def replace_month_letters_to_number(value_string, dict_months, pattern_only_lete
     return result_date
 
 
+def applied_filter_not_intesection_list(list_a, list_b):
+
+    """
+
+        FUNÇÃO PARA OBTER OS VALORES DA LISTA_A QUE ESTÃO CONTIDOS NA LISTA_B.
+
+        PARA ESTAR CONTIDO, BASTA PARTE DA STRING
+        ESTAR DENTRO DE ALGUM DOS VALORES DA LIST_B.
+
+        # Arguments
+            list_a                       - Required : Lista 'a' para ser analistada (List)
+            list_b                       - Required : Lista 'b' para ser comparada (List)
+
+        # Returns
+            return_intersection          - Required : Valor após conversão (Date)
+
+    """
+
+    return_intersection = []
+
+    try:
+        # PERCORRENDO OS ELEMENTOS DA LISTA_A
+        for value_list_a in list_a:
+
+            # PERCORRENDO OS ELEMENTOS DA LISTA_b
+            for value_list_b in list_b:
+
+                if value_list_b.find(value_list_a)!=-1:
+
+                    # OCORREU INTERSECCÇÃO
+                    return_intersection.append(value_list_a)
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+
+    return return_intersection
+
+
 def convert_to_date(input_value, dict_months, pattern_only_leters):
 
     """
