@@ -180,7 +180,7 @@ class Check_Similarity():
 
         """
 
-        # APLICANDO A DISTÂNCIA DE LEVENSHTEIN PARA CADA COMPAAÇÃO (QUERY - CHOICES)
+        # APLICANDO A DISTÂNCIA DE LEVENSHTEIN PARA CADA COMPARAÇÃO (QUERY - CHOICES)
         result_process_extract_similitary = [[value_choice,
                                               (1 - (lev(unidecode(query), unidecode(value_choice))/max(len(unidecode(query)),
                                                                                                        len(unidecode(value_choice)))))*100] for
