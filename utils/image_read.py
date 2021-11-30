@@ -71,14 +71,14 @@ def read_image_rgb(image_path):
     return img
 
 
-def realiza_leitura_imagem(caminho_imagem):
+def read_image(image_path):
 
     """
 
         FUNÇÃO PARA LEITURA DE UMA IMAGEM.
 
         # Arguments
-            caminho_imagem       - Required : Caminho da imagem a ser lida (String)
+            image_path           - Required : Caminho da imagem a ser lida (String)
         # Returns
             img                  - Required : Imagem após leitura (Object)
 
@@ -90,14 +90,14 @@ def realiza_leitura_imagem(caminho_imagem):
     try:
         # UTILIZANDO O OPENCV PARA LEITURA DA IMAGEM
         # A LEITURA É FEITA EM FORMATO BGR
-        img = cv2.imread(caminho_imagem)
+        img = cv2.imread(image_path)
     except Exception as ex:
         print(ex)
 
     return img
 
 
-def realiza_leitura_imagem_pillow(caminho_imagem):
+def read_image_pillow(image_path):
 
     """
 
@@ -105,7 +105,7 @@ def realiza_leitura_imagem_pillow(caminho_imagem):
         UTILIZA PIL - IMAGE
 
         # Arguments
-            caminho_imagem       - Required : Caminho da imagem a ser lida (String)
+            image_path           - Required : Caminho da imagem a ser lida (String)
         # Returns
             img                  - Required : Imagem após leitura (Object)
 
@@ -117,7 +117,7 @@ def realiza_leitura_imagem_pillow(caminho_imagem):
     try:
         # UTILIZANDO O PILLOW PARA LEITURA DA IMAGEM
         # A LEITURA É FEITA EM FORMATO RGB
-        img = Image.open(caminho_imagem)
+        img = Image.open(image_path)
     except Exception as ex:
         print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 
