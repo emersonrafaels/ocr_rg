@@ -86,7 +86,7 @@ class Execute_Process_Names():
         """
 
         # INICIANDO AS VARIÁVEIS DE RETORNO
-        result_similarity = (False, [('', 0)])
+        result_similarity = result_similarity_default = (False, [('', 0)])
         first_name = ""
         gender = ""
 
@@ -111,6 +111,7 @@ class Execute_Process_Names():
                     # CASO NÃO TENHA SIDO, EXCLUI A OPÇÃO
                     if result_similarity[-1][0][-1] < 100 and len(value_x) <= 3:
                         # CASO RECUSADO, CONTINUA BUSCANDO UM NOME VÁLIDO
+                        result_similarity = result_similarity_default
                         continue
                     else:
                         print(result_similarity[-1])
