@@ -63,7 +63,7 @@ class Execute_Process_Location():
         return df_municipios_uf
 
 
-    def get_uf(self, field):
+    def get_uf_similitary(self, field):
 
         """
 
@@ -87,6 +87,54 @@ class Execute_Process_Location():
 
         # INICIANDO A VARIÁVEL AUXILIAR QUE ARMAZENARÁ O MAX MATCH DE SIMILARIDADE
         max_similarity = 0
+        result_similarity = (False, [])
+
+        field = re.sub(r",", ".", field)
+        field = re.sub(r"=", "-", field)
+
+        # TRATANDO O VALOR DO CAMPO
+        field = re.sub(self.regex_only_letters_dot_dash, " ", field).replace("  ", " ").strip()
+
+        if field != "":
+
+            list_values_similitary = drop_duplicates_list([str(value[1]).upper() for value in self.CITY_STATE])
+
+            # OBTENDO O VALOR DE SIMILARIDADE
+            result_similarity = Extract_Infos().get_similitary(field,
+                                                               list_values_similitary,
+                                                               self.default_percent_match,
+                                                               self.similarity_pre_processing,
+                                                               self.limit_result_best_similar)
+
+        # RETORNANDO OS VALORES SIMILARIDADE PARA O ESTADO
+        return result_similarity
+
+
+
+    def get_city_similitary(self, field):
+
+        """
+
+            APLICA TÉCNICAS DE PÓS PROCESSAMENTO: PARA CAMPOS CIDADE
+
+                1) MANTÉM APENAS LETRAS, PONTOS ('.') E TRAÇOS ('-')
+                2) RETIRA ESPAÇOS EM EXCESSO
+                3) OBTEM A MÁXIMA SIMILARIDADE
+
+
+            # Arguments
+                field              - Required : Valor a ser pós processado (String)
+
+            # Returns
+                state              - Required : Estado após processamento (String)
+
+        """
+
+        # INICIANDO AS VARIÁVEIS RESULTANTES DE CIDADE E ESTADO
+        city = ""
+
+        # INICIANDO A VARIÁVEL AUXILIAR QUE ARMAZENARÁ O MAX MATCH DE SIMILARIDADE
+        max_similarity = 0
         result_max_similarity = []
 
         field = re.sub(r",", ".", field)
@@ -95,7 +143,7 @@ class Execute_Process_Location():
         # TRATANDO O VALOR DO CAMPO
         field = re.sub(self.regex_only_letters_dot_dash, " ", field).replace("  ", " ").strip()
 
-        list_values_similitary = drop_duplicates_list([value[1] for value in self.CITY_STATE])
+        list_values_similitary = drop_duplicates_list([str(value[0]).upper() for value in self.CITY_STATE])
 
         # OBTENDO O VALOR DE SIMILARIDADE
         result_similarity = Extract_Infos().get_similitary(field,
