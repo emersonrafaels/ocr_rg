@@ -16,10 +16,12 @@ __data_atualizacao__ = "04/07/2021"
 
 import datetime
 from inspect import stack
+from operator import itemgetter
 from os import path, makedirs
 import re
 import time
 
+from numpy import array
 import pandas as pd
 
 
@@ -442,4 +444,59 @@ def convert_to_date(input_value, dict_months, pattern_only_leters):
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
         return datetime.date(1900, 1, 1)
+
+
+def order_list_with_arguments(list_values, number_column_order=1, limit=1):
+
+    """
+
+        FUNÇÃO PARA ORDENAR UMA LISTA E OBTER UM NÚMERO (LIMIT) DE ARGUMENTOS.
+
+            1) ORDENA A LISTA USANDO UM DOS SEUS ARGUMENTOS (number_column_order)
+            2) FILTRA A LISTA DE ACORDO COM UM NÚMERO DESEJADO DE ELEMENTOS (limit)
+
+        # Arguments
+            list_values                  - Required : Lista de valores para processar (List)
+            number_column_order          - Optional : Qual o argumento deve ser usado
+                                                      como parâmetro de ordenação (Integer)
+            limit                        - Optional : Número desejado de argumentos
+                                                      para retorno da função (Integer)
+
+        # Returns
+            return_list                 - Required : Lista resultado (List)
+
+    """
+
+    # INICIANDO A LISTA DE VARIÁVEL QUE ARMAZENARÁ OS INDEX RESULTANTES
+    list_idx = []
+
+    # VERIFICANDO SE O ARGUMENTO DE ORDENAÇÃO É UM NÚMERO INTEIRO
+    if isinstance(number_column_order, str):
+        if number_column_order.isdigit():
+            number_column_order = int(number_column_order)
+        else:
+            number_column_order = 1
+
+    # VERIFICANDO SE O VALOR DE LIMIT É UM NÚMERO INTEIRO
+    if isinstance(limit, str):
+        if limit.isdigit():
+            limit = int(limit)
+        else:
+            limit = 1
+
+    # ORDENANDO POR UM DOS VALORES DE ARGUMENTOS DA LISTA
+    # FILTRANDO DE ACORDO COM O LIMITE DESEJADO
+    list_result_filter = sorted(list_values, key=lambda row: (row[number_column_order]), reverse=True)[:limit]
+
+    # PERCORRENDO A LISTA DE RESULTADOS, PARA FILTAR NA LISTA ORIGINAL
+    # O OBJETIVO É MANTER NA LISTA ORIGINAL (MANTENDO A ORDEM DELA)
+    for value in list_result_filter:
+        list_idx.append(list_values.index(value))
+
+    # MANTENDO APENAS OS IDX DESEJADOS
+    return_list = array(list_values, dtype=object)[list_idx]
+
+    # RETORNANDO O RESULTADO
+    return return_list
+
 
