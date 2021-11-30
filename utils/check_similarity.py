@@ -49,11 +49,10 @@ __author__ = """Emerson V. Rafael (EMERVIN)"""
 __data_atualizacao__ = "06/10/2021"
 
 
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
 from typing import Union
 from pydantic import validate_arguments
-
+from weighted_levenshtein import lev
+from unidecode import unidecode
 
 
 class Check_Similarity():
@@ -149,6 +148,53 @@ class Check_Similarity():
 
 
     @staticmethod
+    def calculate_similitary(query: str, choices: Union[str, list],
+                             pre_processing=False, limit=5):
+
+        """
+
+            OBTÉM OS VALORES DE SIMILARIDADE PARA TODOS OS ITENS DE CHOICES.
+
+            1) COMPARA QUERY COM CADA ITEM DE CHOICES
+            2) OBTÉM O VALOR DE SIMILARIDADE EM CADA COMPARAÇÃO
+            3) RETORNA UMA LISTA DE TUPLAS CONTENDO ITEM E PERCENTUAL DE SIMILARIDADE.
+
+            # Arguments
+                query                      - Required : Palavra a ser comparada
+                                                        ou utilizada como base para obter
+                                                        as similaridades
+                                                        dentre as possibilidades (String)
+
+                choices                    - Required : Palavra ser comparada com a query ou a lista
+                                                        de palavras a serem comparadas
+                                                        com a query (String | List)
+
+                pre_processing             - Optional : Definindo se deve haver
+                                                        pré processamento (Boolean)
+
+                limit                      - Optional : Limite de resultados
+                                                        de similaridade (Integer)
+
+            # Returns
+                percentual_similarity      - Required : Percentual de similaridade (String | List)
+
+        """
+
+        # APLICANDO A DISTÂNCIA DE LEVENSHTEIN PARA CADA COMPAAÇÃO (QUERY - CHOICES)
+        result_process_extract_similitary = [[value_choice,
+                                              (1 - (lev(unidecode(query), unidecode(value_choice))/max(len(unidecode(query)),
+                                                                                                       len(unidecode(value_choice)))))*100] for
+                                              value_choice in choices]
+
+        # ORDENANDO PELO PERCENTUAL DE SIMILARIDADE
+        result_process_extract_similitary_order = sorted(result_process_extract_similitary, key=lambda row: (row[1]), reverse=True)
+
+        # RETORNANDO DE ACORDO COM O LIMIT DESEJADO
+        return result_process_extract_similitary_order[:limit]
+
+
+
+    @staticmethod
     @validate_arguments
     def get_values_similarity(query: str, choices: Union[str, list],
                               pre_processing=False, limit=5):
@@ -193,7 +239,7 @@ class Check_Similarity():
 
         # RETORNANDO A LISTA DE TUPLAS
         #(VALUE, PERCENTUAL_SIMILARIDADE)
-        return process.extract(query=query, choices=choices, limit=limit)
+        return Check_Similarity.calculate_similitary(query=query, choices=choices, limit=limit)
 
 
     @staticmethod
@@ -241,4 +287,4 @@ class Check_Similarity():
 
         # RETORNANDO A LISTA DE TUPLAS DE ÚNICO VALOR COM MÁXIMA SIMILARIDADE
         # (VALUE, PERCENTUAL_SIMILARIDADE)
-        return process.extractOne(query=query, choices=choices, limit=limit)
+        return Check_Similarity.calculate_similitary(query=query, choices=choices, limit=1)
