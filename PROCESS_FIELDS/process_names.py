@@ -90,7 +90,7 @@ class Execute_Process_Names():
         first_name = ""
         gender = ""
 
-        # VERIFICANDO A  VARIÁVEL DE PRIMEIROS NOMES
+        # VERIFICANDO A VARIÁVEL DE PRIMEIROS NOMES
         if list_first_names is None:
             list_first_names = self.data_first_names_gender
 
@@ -99,8 +99,8 @@ class Execute_Process_Names():
             if value_x != "" and len(value_x) >= 2:
 
                 result_similarity = Extract_Infos.get_similitary(self,
-                                                                 value_x,
-                                                                 [value[0] for value in list_first_names],
+                                                                 str(value_x).upper(),
+                                                                 [str(value[0]).upper() for value in list_first_names],
                                                                  self.default_percent_match,
                                                                  self.similarity_pre_processing,
                                                                  self.limit_result_best_similar)
