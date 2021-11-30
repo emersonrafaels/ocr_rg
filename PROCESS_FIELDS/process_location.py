@@ -252,8 +252,8 @@ class Execute_Process_Location():
                                                                             self.similarity_pre_processing,
                                                                             self.limit_result_best_similar)
 
-            if result_similarity[0]:
-                print(result_similarity)
+            """if result_similarity[0]:
+                print(result_similarity)"""
 
         try:
             result_split = field.split("-")

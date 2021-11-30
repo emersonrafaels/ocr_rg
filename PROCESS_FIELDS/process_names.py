@@ -114,7 +114,7 @@ class Execute_Process_Names():
                         result_similarity = result_similarity_default
                         continue
                     else:
-                        print(result_similarity[-1])
+                        #print(result_similarity[-1])
 
                         # ARMAZENANDO O NOME SALVO
                         first_name = value_x
