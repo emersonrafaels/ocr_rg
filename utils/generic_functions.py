@@ -338,7 +338,8 @@ def replace_month_letters_to_number(value_string, dict_months, pattern_only_lete
     return result_date
 
 
-def applied_filter_not_intesection_list(list_a, list_b, mode="FIND"):
+def applied_filter_not_intesection_list(list_a, list_b,
+                                        mode="FIND", min_len=1):
 
     """
 
@@ -352,6 +353,8 @@ def applied_filter_not_intesection_list(list_a, list_b, mode="FIND"):
             list_a                       - Required : Lista 'a' para ser analistada (List)
             list_b                       - Required : Lista 'b' para ser comparada (List)
             mode                         - Optional : Modo de comparação. O padrão é equal. (String)
+            min_len                      - Optional : Número min de caracteres
+                                                      para teste de validação (Integer)
 
         # Returns
             return_intersection          - Required : Valor após conversão (Date)
@@ -367,7 +370,8 @@ def applied_filter_not_intesection_list(list_a, list_b, mode="FIND"):
             # PERCORRENDO OS ELEMENTOS DA LISTA_b
             for value_list_b in list_b:
 
-                if value_list_a != "" and value_list_b != "":
+                if value_list_a != "" and value_list_b != "" and \
+                        len(value_list_a) > min_len and len(value_list_b) > min_len:
 
                     if str(mode).upper() == "FIND":
 

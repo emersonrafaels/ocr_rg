@@ -21,7 +21,7 @@ class Execute_Process_Names():
                                                      encoding='utf8')
 
         # 3 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
-        self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH
+        self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH_NAME
 
         # 4 - DEFININDO SE DEVE HAVER PRÉ PROCESSAMENTO DOS ITENS ANTES DO CÁLCULO DE SEMELHANÇA
         self.similarity_pre_processing = settings.DEFAULT_PRE_PROCESSING
