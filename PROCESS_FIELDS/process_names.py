@@ -2,6 +2,7 @@ from inspect import stack
 
 from dynaconf import settings
 
+from CONFIG import config
 from UTILS.extract_infos import Extract_Infos
 from UTILS.generic_functions import read_txt
 
@@ -11,12 +12,12 @@ class Execute_Process_Names():
     def __init__(self):
 
         # 1 - REALIZANDO A LEITURA DO BANCO DE DADOS DE NOMES - GENEROS
-        self.data_first_names_gender = self.__get_data_names(settings.DIR_DATA_FIRST_NAMES_GENDER,
+        self.data_first_names_gender = self.__get_data_names(config.DIR_DATA_FIRST_NAMES_GENDER,
                                                              value_split=",",
                                                              encoding='cp1252')
 
         # 2 - REALIZANDO A LEITURA DO BANCO DE DADOS DE SOBRENOMES
-        self.data_last_names = self.__get_data_names(settings.DIR_DATA_LAST_NAMES,
+        self.data_last_names = self.__get_data_names(config.DIR_DATA_LAST_NAMES,
                                                      value_split="-",
                                                      encoding='utf8')
 

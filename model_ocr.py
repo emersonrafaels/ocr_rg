@@ -36,7 +36,7 @@ import warnings
 import cv2
 from dynaconf import settings
 
-
+from CONFIG import config
 from UTILS.generic_functions import format_values_int
 from UTILS.extract_infos import Extract_Infos
 from UTILS.image_view import image_view_functions
@@ -126,7 +126,7 @@ class Execute_OCR_RG(object):
 
         try:
             # DEFININDO OS PARÂMETROS DE CONEXÃO
-            caminho_bd_bds = settings.DIR_BD_OCR
+            caminho_bd_bds = config.DIR_BD_OCR
             ssql_bds = settings.QUERY_FIELDS
             params_bds = (None,)
             tipo_query_bds = settings.QUERY_TYPE_FIELDS
@@ -164,7 +164,7 @@ class Execute_OCR_RG(object):
 
         try:
             # DEFININDO OS PARÂMETROS DE CONEXÃO
-            caminho_bd_bds = settings.DIR_BD_OCR
+            caminho_bd_bds = config.DIR_BD_OCR
             ssql_bds = settings.QUERY_COORD
             params_bds = (None,)
             tipo_query_bds = settings.QUERY_TYPE_COORD

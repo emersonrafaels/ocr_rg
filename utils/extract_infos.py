@@ -3,6 +3,7 @@ import re
 
 from dynaconf import settings
 
+from CONFIG import config
 from UTILS.conectores_db.main import conectores
 from UTILS.check_similarity import Check_Similarity
 
@@ -41,7 +42,7 @@ class Extract_Infos():
 
         try:
             # DEFININDO OS PARÂMETROS DE CONEXÃO
-            caminho_bd_bds = settings.DIR_BD_OCR
+            caminho_bd_bds = config.DIR_BD_OCR
             ssql_bds = settings.QUERY_REGEX
             params_bds = (None,)
             tipo_query_bds = settings.QUERY_TYPE_REGEX
