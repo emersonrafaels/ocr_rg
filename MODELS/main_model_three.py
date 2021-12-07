@@ -445,7 +445,8 @@ class model_three():
         return data_exp, data_nasc
 
 
-    def get_values(self, text, pattern, filters_validate=[]):
+    def get_values(self, text, pattern, filters_validate=[],
+                   limit_values=None):
 
         """
 
@@ -460,6 +461,7 @@ class model_three():
                                                  obtenção dos dados (Regex)
                 filters_validate    - Optional : Filtros e validações
                                                  a serem aplicadas (List)
+                limit_values        - Optional : Limite de valores desejados (Integer)
 
 
             # Returns
@@ -478,7 +480,11 @@ class model_three():
 
                 # FORMATANDO A LISTA DE REGISTROS GERAIS
                 list_result = [value[-1] for value in list_result if not applied_filter_not_intesection_list([value[-1]],
-                                                                                                              filters_validate, mode="FIND")]
+                                                                                                              filters_validate,
+                                                                                                              mode="FIND")]
+
+                if limit_values:
+                    list_result = list_result[:limit_values]
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
@@ -504,17 +510,20 @@ class model_three():
         cidade_origem = ""
         estado_origem = ""
 
-        print(text)
-        print("-"*50)
+        #print(text)
+        #print("-"*50)
 
         # OBTENDO AS DATAS
         data_exp, data_nasc = model_three.get_result_datas(self, text, self.pattern_data)
 
         # OBTENDO CPF
-        list_result_cpf = model_three.get_values(self, text, self.pattern_cpf)
+        list_result_cpf = model_three.get_values(self, text, self.pattern_cpf,
+                                                 limit_values=1)
 
         # OBTENDO RG (FILTRANDO VALORES QUE JÁ CONSTAM COMO CPF)
-        list_result_rg = model_three.get_values(self, text, self.pattern_rg, filters_validate=list_result_cpf)
+        list_result_rg = model_three.get_values(self, text, self.pattern_rg,
+                                                filters_validate=list_result_cpf,
+                                                limit_values=1)
 
         # OBTENDO AS CIDADES-ESTADO
         cidade_nasc, estado_nasc, cidade_origem, estado_origem = model_three.get_result_location(self, text,
@@ -525,7 +534,6 @@ class model_three():
 
         # OBTENDO OS NOMES
         nome, nome_pai, nome_mae = model_three.get_names(self, text, results_ocr, settings.REGEX_ONLY_LETTERS)
-
 
         # FORMATANDO O RESULTADO DOS CAMPOS NUMÉRICOS
         list_result_rg = [model_three.__postprocess_num(value_rg, settings.REGEX_ONLY_NUMBERS) for value_rg in list_result_rg]
@@ -540,7 +548,7 @@ class model_three():
         cidade_origem = model_three.__postprocess_string(cidade_origem, settings.REGEX_ONLY_LETTERS_DOT_DASH)
         estado_origem = model_three.__postprocess_string(estado_origem, settings.REGEX_ONLY_LETTERS)
 
-        return data_exp, data_nasc, list_result_rg, list_result_cpf, \
+        return text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
                nome, nome_pai, nome_mae, \
                cidade_nasc, estado_nasc, cidade_origem, estado_origem
 
@@ -548,6 +556,8 @@ class model_three():
 
 def main_model(dir_image):
 
+    # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO OS RESULTADOS DO MODELO
+    result_model = []
     info_doc = {}
 
     # ENVIANDO A IMAGEM ORIGINAL E A IMAGEM EM PRETO E BRANCO
@@ -556,7 +566,7 @@ def main_model(dir_image):
         print("-" * 50)
         print("MODELO TRÊS - RODADA: {}".format(idx))
 
-        data_exp, data_nasc, list_result_rg, list_result_cpf, \
+        text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
         nome, nome_pai, nome_mae, \
         cidade_nasc, estado_nasc, cidade_origem, estado_origem = model_three(image).orchestra_model()
 
@@ -573,8 +583,13 @@ def main_model(dir_image):
         info_doc['CIDADE_ORIGEM'] = cidade_origem
         info_doc['ESTADO_ORIGEM'] = estado_origem
 
+        print("RESULTADO OBTIDO - RODADA: {}".format(idx))
+        print(info_doc)
+
         # VISUALIZANDO OS RESULTADOS
-        return info_doc
+        result_model.append([text, info_doc])
+
+    return result_model
 
 
 

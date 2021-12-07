@@ -1,3 +1,6 @@
 [submodule "UTILS/conectores_db"]
 	path = UTILS/conectores_db
 	url = git@github.com:emersonrafaels/conectores_db.git
+[submodule "UTILS/deep_check_orientation"]
+	path = UTILS/deep_check_orientation
+	url = git@github.com:emersonrafaels/deep_check_orientation.git

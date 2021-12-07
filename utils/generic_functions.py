@@ -17,7 +17,7 @@ __data_atualizacao__ = "04/07/2021"
 import datetime
 from inspect import stack
 from operator import itemgetter
-from os import path, makedirs
+from os import path, makedirs, listdir
 import re
 import time
 
@@ -69,7 +69,7 @@ def create_path(dir):
 
     try:
         # REALIZANDO A CRIAÇÃO DO DIRETÓRIO
-        makedirs(dir)
+        makedirs(dir, exist_ok=True)
 
         validator = True
     except Exception as ex:
@@ -78,12 +78,56 @@ def create_path(dir):
     return validator
 
 
+def get_files_directory(path_dir, specific_type=None):
+
+    """
+
+        FUNÇÃO PARA OBTER ARQUIVOS DE UM DIRETÓRIO.
+
+        É POSSÍVEL ENVIAR UM FORMATO ESPECÍFICO PARA
+        FILTRO DO FORMATO DE ARQUIVO DESEJADO.
+        EX: OBTER APENAS JPGS
+
+        # Arguments
+            path_dir                   - Required : Diretório analisado (String)
+            specific_type              - Optional : Lista com os formatos desejados (List)
+
+        # Returns
+            list_files                 - Required : Arquivos do diretório (List)
+
+    """
+
+    # INICIANDO A VARIÁVEL QUE ARMAZENARÁ TODOS OS ARQUIVOS DO DIRETÓRIO
+    list_files = []
+
+    # OBTENDO TODOS OS ARQUIVOS
+    try:
+
+        # VERIFICANDO SE É DIRETÓRIO
+        if path.isdir(path_dir):
+
+            list_files = [path.join(path_dir, name) for name in listdir(path_dir)]
+
+            if specific_type:
+
+                if not isinstance(specific_type, tuple):
+                    specific_type = tuple(specific_type)
+
+                list_files = [arq for arq in list_files if arq.lower().endswith((specific_type))]
+
+        else:
+            list_files = [path_dir]
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+    return list_files
+
 def converte_int(valor_para_converter):
 
     """
 
         FUNÇÃO GENÉRICA PARA CONVERTER UM VALOR PARA FORMATO INTEIRO.
-
 
         # Arguments
             valor_para_converter              - Required : Valor para converter (Object)
