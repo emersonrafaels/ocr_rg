@@ -24,7 +24,7 @@ import pytesseract
 
 from UTILS.generic_functions import converte_int
 from UTILS.image_view import image_view_functions
-from UTILS.image_convert_format import convert_image
+from UTILS.image_convert_format import orchestra_read_image
 
 
 class ocr_functions():
@@ -229,7 +229,7 @@ class ocr_functions():
         try:
 
             # ORQUESTRANDO A LEITURA DA IMAGEM
-            imagem_atual = convert_image(caminho_imagem_atual)
+            imagem_atual = orchestra_read_image(caminho_imagem_atual)
 
             valor_orientacao = pytesseract.image_to_osd(imagem_atual)
             validador = True
@@ -433,7 +433,7 @@ class ocr_functions():
         # validador, resultado_orientacao = ocr_functions.obtem_orientacao_imagem(self, image)
 
         # REALIZANDO A LEITURA DA IMAGEM
-        img_ocr = convert_image(image)
+        img_ocr = orchestra_read_image(image)
 
         # DEFININDO AS CONFIGURAÇÕES DO OCR - TESSERACT
         validador = ocr_functions.set_config_tesseract(self)

@@ -10,6 +10,9 @@ from PROCESS_FIELDS.process_names import Execute_Process_Names
 from PROCESS_FIELDS.process_location import Execute_Process_Location
 from UTILS.image_ocr import ocr_functions
 from UTILS.image_read import read_image, read_image_gray
+from UTILS.image_convert_format import orchestra_read_image
+from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
+
 
 class model_three():
 
@@ -28,6 +31,32 @@ class model_three():
         self.orchestra_extract_infos = Extract_Infos()
         self.orchestra_process_names = Execute_Process_Names()
         self.orchestra_process_location = Execute_Process_Location()
+
+
+    def rotate_image(image):
+
+        """
+
+            APLICA A ROTAÇÃO CORRETA NA IMAGEM.
+
+            # Arguments
+                image                - Required : Imagem a ser rotacionada corretamente (String)
+
+            # Returns
+                output               - Required : Valor após processamento (String)
+
+        """
+
+        # INICIANDO A VARIÁVEL RESULTADO
+        image_rotate = []
+
+        try:
+            _, rotations_number, image_rotate = check_orientation().orchesta_model(image)
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            image_rotate = image
+
+        return image_rotate
 
 
     @staticmethod
@@ -556,12 +585,54 @@ class model_three():
 
 def main_model(dir_image):
 
-    # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO OS RESULTADOS DO MODELO
+    # INICIANDO A VARIÁVEL CONTENDO A LISTA DE IMAGENS A SER ENVIADA
+    list_images = []
+
+    # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO DO MODELO
     result_model = []
-    info_doc = {}
+
+    if settings.ROTATE_IMAGE:
+        # REALIZANDO A ROTAÇÃO DA IMAGEM
+        input_image = model_three.rotate_image(dir_image)
+    else:
+        input_image = dir_image
+
+    # OBTENDO AS IMAGENS A SEREM ENVIADAS
+    img_rotate_gray = read_image_gray(input_image)
+    img_rotate_rgb = orchestra_read_image(input_image)
+
+    # VERIFICANDO SE É NECESSÁRIO ENVIAR A IMAGEM ROTACIONADA + IMAGEM ROTACIONADA EM 180
+    if settings.DUPLO_CHECK_ROTATE:
+
+        """
+            ENVIA:
+                1) IMAGEM EM ESCALA DE CINZA
+                2) IMAGEM ESCALA DE CINZA ROTACIONADA EM 180º
+                3) IMAGEM NA COR ORIGINAL
+                4) IMAGEM NA COR ORIGINAL ROTACIONADA EM 180º
+        """
+
+        list_images = [img_rotate_gray,
+                       check_orientation.get_image_correct_orientation(img_rotate_gray, 2),
+                       img_rotate_rgb,
+                       check_orientation.get_image_correct_orientation(img_rotate_rgb, 2)]
+
+    else:
+
+        """
+            ENVIA:
+                1) IMAGEM EM ESCALA DE CINZA
+                2) IMAGEM NA COR ORIGINAL
+        """
+
+        list_images = [img_rotate_gray,
+                       img_rotate_rgb]
 
     # ENVIANDO A IMAGEM ORIGINAL E A IMAGEM EM PRETO E BRANCO
-    for idx, image in enumerate([read_image_gray(dir_image), read_image(dir_image)]):
+    for idx, image in enumerate(list_images):
+
+        # INICIANDO AS VARIÁVEL QUE ARMAZENARÁ O RESULTADO DA RODADA
+        info_doc = {}
 
         print("-" * 50)
         print("MODELO TRÊS - RODADA: {}".format(idx))

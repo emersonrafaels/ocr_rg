@@ -1,10 +1,9 @@
 import datetime
 
-import pandas as pd
-
+from UTILS.conectores_db.main import conectores
+from UTILS.generic_functions import get_date_time_now
 from MODELS.main_model_three import main_model
 from UTILS.generic_functions import create_path, get_files_directory
-from UTILS.conectores_db.main import conectores
 
 
 def get_processed_files(dir_db_results):
@@ -36,7 +35,8 @@ def get_shortened_name(name_file):
         return datetime.datetime.now().strftime("%H%M%S%s%d%Y")
 
 
-def insert_processed_image(dir_db_results, image, input_result):
+def insert_processed_image(dir_db_results, image, input_result,
+                           dt_hr_inicio, dt_hr_fim):
 
     for idx, result in enumerate(input_result):
 
@@ -58,10 +58,12 @@ def insert_processed_image(dir_db_results, image, input_result):
                                     ESTADO_NASC,
                                     CIDADE_ORIGEM,
                                     ESTADO_ORIGEM,
-                                    TIPO_MODELO
+                                    TIPO_MODELO, 
+                                    DT_HR_INICIO,
+                                    DT_HR_FIM
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-        params_bds = (name_short, result[0],
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+        params_bds = (str(name_short), result[0],
                       ",".join(result[-1]["RG"]), result[-1]["DATA_EXPED"],
                       result[-1]["NOME"],
                       result[-1]["NOME_PAI"],
@@ -72,7 +74,8 @@ def insert_processed_image(dir_db_results, image, input_result):
                       result[-1]["ESTADO_NASC"],
                       result[-1]["CIDADE_ORIGEM"],
                       result[-1]["ESTADO_ORIGEM"],
-                      "MODELO TRÊS - RODADA {}".format(idx))
+                      "MODELO TRÊS - RODADA {}".format(idx),
+                      dt_hr_inicio, dt_hr_fim)
         tipo_query_bds = "INSERT"
 
         result_query = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
@@ -103,13 +106,17 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
             if not get_shortened_name(image) in imagens_anterior_processadas:
 
                 print("IMAGEM ATUAL: {}".format(image))
+                dt_hr_inicio = get_date_time_now("%d/%m/%Y %H:%M:%S")
 
                 result_image = main_model(image)
 
-                _ = insert_processed_image(dir_bd_results, image, result_image)
+                dt_hr_fim = get_date_time_now("%d/%m/%Y %H:%M:%S")
+
+                _ = insert_processed_image(dir_bd_results, image, result_image,
+                                           dt_hr_inicio, dt_hr_fim)
 
 
-input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG'
+input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Roberto_Guedes_Verso.png'
 output_dir = r'RESULTADOS/MODEL_THREE'
 dir_bd_results = r'DB_RG_OCR_TESTS.db'
 

@@ -14,19 +14,21 @@ __data_atualizacao__ = "15/10/2021"
 
 
 from inspect import stack
+import os
 
 import cv2
 from PIL import Image
+import numpy as np
 
 
-def read_image_gray(image_path):
+def read_image_gray(input_image):
 
     """
 
         FUNÇÃO PARA LEITURA DE UMA IMAGEM.
 
         # Arguments
-            caminho_imagem       - Required : Caminho da imagem a ser lida (String)
+            input_image          - Required : Caminho da imagem a ser lida (String)
         # Returns
             img                  - Required : Imagem após leitura (Array)
 
@@ -36,8 +38,12 @@ def read_image_gray(image_path):
     img = None
 
     try:
-        # A LEITURA É FEITA EM FORMATO RGB
-        image = cv2.imread(str(image_path))
+        if not type(input_image) is np.ndarray:
+            # A LEITURA É FEITA EM FORMATO RGB
+            image = cv2.imread(str(input_image))
+        else:
+            image = input_image
+
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     except Exception as ex:
         print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))

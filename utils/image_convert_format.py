@@ -159,7 +159,7 @@ def str_to_base64(image):
     return img_base64
 
 
-def convert_image(image):
+def orchestra_read_image(image):
 
     """
 
