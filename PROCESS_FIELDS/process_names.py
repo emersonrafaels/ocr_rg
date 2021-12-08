@@ -1,10 +1,11 @@
 from inspect import stack
+import re
 
 from dynaconf import settings
 
 from CONFIG import config
 from UTILS.extract_infos import Extract_Infos
-from UTILS.generic_functions import read_txt
+from UTILS.generic_functions import read_txt, applied_filter_not_intesection_list, order_list_with_arguments
 
 
 class Execute_Process_Names():
@@ -177,7 +178,7 @@ class Execute_Process_Names():
                                                                      self.limit_result_best_similar)
 
                     if result_similarity[0]:
-                        print(value_x, result_similarity[-1])
+                        # print(value_x, result_similarity[-1])
 
                         # ARMAZENANDO O NOME SALVO
                         last_name += value_x + " "
@@ -189,7 +190,9 @@ class Execute_Process_Names():
         return last_name.strip()
 
 
-    def orchestra_postprocess_names(self, info_extracted):
+    def orchestra_postprocess_names(self, info_extracted,
+                                    filters_validate=[],
+                                    pattern_only_letters=settings.REGEX_ONLY_LETTERS):
 
         """
 
@@ -198,57 +201,70 @@ class Execute_Process_Names():
                 1) RETIRA VALORES QUE NÃO SÃO NOME E/OU SOBRENOMES.
 
             # Arguments
-                field              - Required : Valor a ser pós processado (String)
+                info_extracted       - Required : Textos a serem analisado (Dict)
+                filters_validate     - Optional : Filtros e validações
+                                                 a serem aplicadas (List)
+
+                regex_only_letters   - Optional : Pattern a ser utilizado (Regex)
 
             # Returns
-                output             - Required : Valor após processamento (String)
+                output               - Required : Valor após processamento (String)
 
         """
+
+        # INICIANDO O VALIDADOR DE FIM DA FUNÇÃO
+        validador = False
+
+        result_names = []
 
         dict_names = ["NOME", "NOME_MAE", "NOME_PAI"]
 
         for field in dict_names:
 
+            validador = False
+
             # FILTRANDO O VALOR DO CAMPO ATUAL
-            name_input = info_extracted[field]
+            value_x = info_extracted[field]
 
-            if " E " in name_input and field == "NOME_MAE":
+            # MANTENDO APENAS LETRAS
+            result_split = re.sub(pattern=pattern_only_letters,
+                                  string=value_x,
+                                  repl=" ").replace("  ", " ").strip()
 
-                result_split = name_input.split(" E ")
+            if not validador:
 
-                # ATUALIZANDO O VALOR DO CAMPO NOME_MAE
-                name_before_letter_e = result_split[0]
-                name_input = result_split[-1]
+                for value_y in result_split.split(" "):
 
-                # INSERINDO O VALOR ANTES DO E NO CAMPO NOME_PAI
-                try:
-                    if name_before_letter_e not in info_extracted["NOME_PAI"]:
-                        info_extracted["NOME_PAI"] += " " + name_before_letter_e
-                except Exception as ex:
-                    print(ex)
+                    # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
+                    if value_y != "" and not applied_filter_not_intesection_list(
+                            [value_split for value_split in value_y.split(" ") if value_split != ""],
+                            filters_validate + settings.WORDS_BLACK_LIST_NAMES,
+                            mode="FIND", min_len=3):
 
-            print("CAMPO ATUAL: {}".format(field))
-            print("VALOR DE INPUT: {}".format(name_input))
+                        # print("NOME: TESTANDO: {}".format(value_y))
 
-            # OBTENDO O PRIMEIRO NOME VÁLIDO
-            result_similarity, first_name, gender = Execute_Process_Names.get_first_name_valid(self, name_input,
-                                                                                               self.data_first_names_gender)
+                        # VALIDANDO SE É UM NOME VÁLIDO
+                        result_valid_name = Execute_Process_Names.get_first_name_valid(self, value_y,
+                                                                                       self.data_first_names_gender)
 
-            # FILTRANDO O NOME CONFORME O PRIMEIRO NOME VÁLIDO
-            result_first_name = name_input[name_input.find(first_name):]
+                        if result_valid_name[0][0]:
+                            result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
 
-            print(result_first_name)
-            print("GÊNERO: {}".format(gender))
+                            if result_valid_name[0][-1][0][-1] == 100:
+                                info_extracted[field] = value_x[value_x.find(result_valid_name[-2]):]
+                                validador = True
+                                break
 
-            # VALIDANDO OS SOBRENOMES
-            result_last_name = Execute_Process_Names.last_name_valid(self, result_first_name,
-                                                                     first_name,
-                                                                     self.data_last_names)
-            print(result_last_name)
 
-            print("-" * 50)
+            else:
+                break
 
-            # ATUALIZADO O NOME
-            info_extracted[field] = result_last_name
+            if not validador:
+                # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
+                result_order_names = order_list_with_arguments(list_values=result_names,
+                                                         number_column_order=1,
+                                                         limit=1)
+
+                info_extracted[field] = value_x[value_x.find(result_order_names[0][0]):]
 
         return info_extracted

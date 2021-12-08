@@ -80,7 +80,10 @@ class model_three():
 
         try:
             # MANTENDO APENAS LETRAS E TORNANDO O TEXTO UPPERCASE
-            output = re.sub(regex_only_letters, " ", field).replace("  ", " ").strip().upper()
+            output = re.sub(regex_only_letters, " ", field).strip().upper()
+
+            # RETIRANDO ESPAÇOS DESNECESSÁRIOS
+            output = re.sub(' +', ' ', output)
 
             # RETIRANDO OS ACENTOS
             output = unidecode.unidecode(output)

@@ -80,7 +80,10 @@ class model_four():
 
         try:
             # MANTENDO APENAS LETRAS E TORNANDO O TEXTO UPPERCASE
-            output = re.sub(regex_only_letters, " ", field).replace("  ", " ").strip().upper()
+            output = re.sub(regex_only_letters, " ", field).strip().upper()
+
+            # RETIRANDO ESPAÇOS DESNECESSÁRIOS
+            output = re.sub(' +', ' ', output)
 
             # RETIRANDO OS ACENTOS
             output = unidecode.unidecode(output)
@@ -207,7 +210,7 @@ class model_four():
                                                  number_column_order=1,
                                                  limit=3)
 
-        # OBTENDO OS VALORES DE DATA DE EXPEDIÇÃO DE DATA DE NASCIMENTO
+        # OBTENDO OS VALORES DE NOME, NOME MÃE E NOME PAI
         if len(result_names) == 1:
 
             nome = text[text.find(result_names[0][0]):].split("\n")[0]

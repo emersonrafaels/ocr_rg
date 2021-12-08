@@ -116,7 +116,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
                                            dt_hr_inicio, dt_hr_fim)
 
 
-input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Valdineia_Aparecida.PNG'
+input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Jose_Clerton.PNG'
 output_dir = r'RESULTADOS/MODEL_THREE'
 dir_bd_results = r'DB_RG_OCR_TESTS.db'
 

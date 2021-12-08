@@ -37,13 +37,14 @@ import cv2
 from dynaconf import settings
 
 from CONFIG import config
+from MODELS.main_model_four import main_model as main_model_four
+from PROCESS_FIELDS.process_names import Execute_Process_Names
+from PROCESS_FIELDS.process_location import Execute_Process_Location
 from UTILS.generic_functions import format_values_int
 from UTILS.extract_infos import Extract_Infos
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
 from UTILS.conectores_db.main import conectores
-from PROCESS_FIELDS.process_names import Execute_Process_Names
-from PROCESS_FIELDS.process_location import Execute_Process_Location
 
 warnings.filterwarnings("ignore")
 
@@ -215,7 +216,10 @@ class Execute_OCR_RG(object):
 
         try:
             # MANTENDO APENAS LETRAS E TORNANDO O TEXTO UPPERCASE
-            output = re.sub(self.regex_only_letters, " ", field).replace("  ", " ").strip().upper()
+            output = re.sub(self.regex_only_letters, " ", field).strip().upper()
+
+            # RETIRANDO ESPAÇOS DESNECESSÁRIOS
+            output = re.sub(' +', ' ', output)
 
             # RETIRANDO OS ACENTOS
             output = unidecode.unidecode(output)
@@ -491,13 +495,21 @@ class Execute_OCR_RG(object):
         info_extracted["CIDADE_NASC"], info_extracted["ESTADO_NASC"] = Execute_Process_Location().orchestra_postprocess_location(
             info_extracted["CIDADE_NASC"])
 
+        # RESULTADOS ATÉ ENTÃO
+        results_ocr = [info_extracted["RG"], info_extracted["CPF"],
+                       info_extracted["DATA_EXPED"], info_extracted["DATA_NASC"],
+                       info_extracted["CIDADE_ORIGEM"], info_extracted["ESTADO_ORIGEM"],
+                       info_extracted["CIDADE_NASC"], info_extracted["ESTADO_NASC"]]
+
+        # APLICANDO PÓS PROCESSAMENTO DE NOMES
+        info_extracted = Execute_Process_Names().orchestra_postprocess_names(info_extracted,
+                                                                             results_ocr,
+                                                                             settings.REGEX_ONLY_LETTERS)
+
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
         for column in ["NOME", "NOME_MAE", "NOME_PAI", "CIDADE_ORIGEM",
                        "ESTADO_ORIGEM", "CIDADE_NASC", "ESTADO_NASC"]:
             info_extracted[column] = self.__postprocess_string(info_extracted[column])
-
-        # APLICANDO PÓS PROCESSAMENTO DE NOMES
-        info_extracted = Execute_Process_Names().orchestra_postprocess_names(info_extracted)
 
         # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted
@@ -522,9 +534,9 @@ class Execute_OCR_RG(object):
                                    interpolation=cv2.INTER_AREA)
 
         # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
-        image_view_functions.view_image(img_original, window_name="ORIGINAL")
-        image_view_functions.view_image(cropped_image, window_name="CROPPED")
-        image_view_functions.view_image(warped_img, window_name="WARPED")
+        # image_view_functions.view_image(img_original, window_name="ORIGINAL")
+        # image_view_functions.view_image(cropped_image, window_name="CROPPED")
+        # image_view_functions.view_image(warped_img, window_name="WARPED")
 
         # APLICANDO O OCR - CAMPO A CAMPO
         info_field = self.execute_ocr(cropped_image)
@@ -532,15 +544,4 @@ class Execute_OCR_RG(object):
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
         info_field = self.orchestra_pos_processing(info_field)
 
-        # APLICANDO O OCR NO DOCUMENTO INTEIRO
-        info_doc = ocr_functions().Orquestra_OCR(img_original)
-
-        print("RESULTADO - MODELO 2:")
-        print(info_field)
-        print("RESULTADO - MODELO 4:")
-        print(info_doc)
-
-        # APLICANDO O OCR - BOUNDING BOX
-        info_box = self.execute_ocr_box(img_original)
-
-        return info_field, info_doc
+        return info_field
