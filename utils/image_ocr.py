@@ -281,6 +281,35 @@ class ocr_functions():
         return validador
 
 
+    @staticmethod
+    def convert_resultado_ocr_completo(input_result_ocr):
+
+        result_ocr = " ".join(input_result_ocr["text"])
+
+        string_atual = ""
+        list_result = []
+
+        for value in str(result_ocr).strip().split(" "):
+
+            text_valid = False
+
+            if str(value).strip() != "":
+                string_atual = string_atual + " " + value
+                text_valid = True
+            else:
+                text_valid = False
+                list_result.append(str(string_atual).strip())
+                string_atual = ""
+
+        # FORMATANDO PARA RESULTADO EM FORMATO TEXTO
+        text_result = "\n".join(list_result)
+
+        # RETORNANDO O RESULTADO DO OCR
+        # LISTA CONTENDO CADA UM DOS TEXTOS
+        # TEXTO CONTENDO O TEXTO COM QUEBRA DE LINHAS
+        return list_result, text_result
+
+
     def realizar_ocr_retorno_completo(self, imagem_rgb):
 
         """

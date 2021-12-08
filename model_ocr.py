@@ -537,7 +537,7 @@ class Execute_OCR_RG(object):
 
         print("RESULTADO - MODELO 2:")
         print(info_field)
-        print("RESULTADO - MODELO 3:")
+        print("RESULTADO - MODELO 4:")
         print(info_doc)
 
         # APLICANDO O OCR - BOUNDING BOX

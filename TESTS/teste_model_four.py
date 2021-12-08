@@ -2,7 +2,7 @@ import datetime
 
 from UTILS.conectores_db.main import conectores
 from UTILS.generic_functions import get_date_time_now
-from MODELS.main_model_three import main_model
+from MODELS.main_model_four import main_model
 from UTILS.generic_functions import create_path, get_files_directory
 
 
@@ -12,7 +12,7 @@ def get_processed_files(dir_db_results):
 
     try:
         caminho_bd_bds = dir_db_results
-        ssql_bds = "SELECT ID_IMAGEM FROM TBL_PIXEL_TESTS WHERE TIPO_MODELO LIKE '%MODELO TRES%'"
+        ssql_bds = "SELECT ID_IMAGEM FROM TBL_PIXEL_TESTS WHERE TIPO_MODELO LIKE '%MODELO QUATRO%'"
         params_bds = (None,)
         tipo_query_bds = "SELECT"
 
@@ -74,7 +74,7 @@ def insert_processed_image(dir_db_results, image, input_result,
                       result[-1]["ESTADO_NASC"],
                       result[-1]["CIDADE_ORIGEM"],
                       result[-1]["ESTADO_ORIGEM"],
-                      "MODELO TRES - RODADA {}".format(idx),
+                      "MODELO QUATRO - RODADA {}".format(idx),
                       dt_hr_inicio, dt_hr_fim)
         tipo_query_bds = "INSERT"
 
@@ -116,7 +116,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
                                            dt_hr_inicio, dt_hr_fim)
 
 
-input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG'
+input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Valdineia_Aparecida.PNG'
 output_dir = r'RESULTADOS/MODEL_THREE'
 dir_bd_results = r'DB_RG_OCR_TESTS.db'
 
