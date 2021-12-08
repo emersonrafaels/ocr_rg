@@ -482,6 +482,7 @@ class Execute_OCR_RG(object):
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
         for column in ["RG", "CPF"]:
             info_extracted[column] = self.__postprocess_num(info_extracted[column])
+            info_extracted[column] = info_extracted[column].split(",")
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS DATAS
         for column in ["DATA_EXPED", "DATA_NASC"]:

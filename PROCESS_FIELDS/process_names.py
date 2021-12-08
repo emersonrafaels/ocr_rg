@@ -265,6 +265,11 @@ class Execute_Process_Names():
                                                          number_column_order=1,
                                                          limit=1)
 
-                info_extracted[field] = value_x[value_x.find(result_order_names[0][0]):]
+                if len(result_order_names):
+
+                    info_extracted[field] = value_x[value_x.find(result_order_names[0][0]):]
+
+                else:
+                    info_extracted[field] = ""
 
         return info_extracted

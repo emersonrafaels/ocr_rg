@@ -657,10 +657,11 @@ def main_model(dir_image):
         info_doc['CIDADE_ORIGEM'] = cidade_origem
         info_doc['ESTADO_ORIGEM'] = estado_origem
 
+        # VISUALIZANDO OS RESULTADOS
         print("RESULTADO OBTIDO - RODADA: {}".format(idx))
         print(info_doc)
 
-        # VISUALIZANDO OS RESULTADOS
+        # ARMAZENANDO O RESULTADO
         result_model.append([text, info_doc])
 
     return result_model

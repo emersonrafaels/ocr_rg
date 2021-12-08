@@ -210,7 +210,7 @@ class Image_Pre_Processing(object):
         """
 
         # INICIANDO O VALIDADOR DA FUNÇÃO
-        validator = False
+        validator = True
 
         try:
             blur = cv2.GaussianBlur(img, (self.__blur_ksize, self.__blur_ksize), 0)
@@ -263,7 +263,7 @@ class Image_Pre_Processing(object):
         """
 
         # INICIANDO O VALIDADOR DA FUNÇÃO
-        validator = False
+        validator = True
 
         try:
             thresh = cv2.adaptiveThreshold(img, self.__threshold_max_color_value,
@@ -543,7 +543,7 @@ class Image_Pre_Processing(object):
         return np.float32((idx>1)*high_value)
 
 
-    def run(self, img_path):
+    def run(self, dir_image):
 
         """
 
@@ -558,7 +558,7 @@ class Image_Pre_Processing(object):
             img = image_crooped_contour = image_warped
 
             # Arguments
-                img_path                  - Required : Caminho da imagem a ser lida (String)
+                dir_image                 - Required : Imagem a ser lida (String)
 
             # Returns
                 img                       - Required : Imagem lida em escala de cinza (Array)
@@ -574,7 +574,8 @@ class Image_Pre_Processing(object):
         img = image_cropped_contour = image_warped = None
 
         # REALIZANDO A LEITURA DA IMAGEM EM ESCALA DE CINZA
-        img = read_image_gray(img_path)
+        # img = read_image_gray(dir_image)
+        img = dir_image
 
         if not img is None:
 
@@ -611,5 +612,8 @@ class Image_Pre_Processing(object):
                         # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
                         M = cv2.getPerspectiveTransform(pts1, pts2)
                         image_warped = cv2.warpPerspective(img, M, (self.__output_size, self.__output_size))
+
+                else:
+                    image_cropped_contour = image_warped = img
 
         return img, image_cropped_contour, image_warped

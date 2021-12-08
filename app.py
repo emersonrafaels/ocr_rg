@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, redirect
 from forms import AddImage, RGFields
 
-from main import Image_Pre_Processing, Execute_OCR_RG
+from main_model_two import Image_Pre_Processing, Execute_OCR_RG
 import cv2
 
 
