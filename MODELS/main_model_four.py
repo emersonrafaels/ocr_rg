@@ -832,6 +832,10 @@ def main_model(dir_image):
     else:
         input_image = dir_image
 
+    if settings.PRE_PROC_IMAGE:
+        # REALIZANDO A ROTAÇÃO DA IMAGEM
+        input_image = model_four.rotate_image(dir_image)
+
     # OBTENDO AS IMAGENS A SEREM ENVIADAS
     img_rotate_gray = read_image_gray(input_image)
     img_rotate_rgb = orchestra_read_image(input_image)

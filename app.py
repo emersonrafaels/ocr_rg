@@ -1,9 +1,7 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template
 from forms import AddImage, RGFields
 
-from main_model_two import Image_Pre_Processing, Execute_OCR_RG
-import cv2
-
+from MODELS.main_model_two import Image_Pre_Processing, Execute_OCR_RG
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "mysecretkey"

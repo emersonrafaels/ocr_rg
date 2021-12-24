@@ -543,7 +543,7 @@ class Image_Pre_Processing(object):
         return np.float32((idx>1)*high_value)
 
 
-    def run(self, dir_image):
+    def orchestra_pre_processing(self, image):
 
         """
 
@@ -571,23 +571,19 @@ class Image_Pre_Processing(object):
         """
 
         # INICIANDO AS VARIÁVEIS QUE SERÃO RETORNADAS
-        img = image_cropped_contour = image_warped = None
+        image_cropped_contour = image_warped = None
 
-        # REALIZANDO A LEITURA DA IMAGEM EM ESCALA DE CINZA
-        # img = read_image_gray(dir_image)
-        img = dir_image
+        if not image is None:
 
-        if not img is None:
-
-            while max(img.shape) > 2000:
-                img = cv2.pyrDown(img)
+            while max(image.shape) > 2000:
+                image = cv2.pyrDown(image)
 
             # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
-            if img.shape[1] > self.__width:
-                img = self._resize_image(img)
+            if image.shape[1] > self.__width:
+                image = self._resize_image(image)
 
             # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM BLURRING
-            validator, preproc_img = self.__preprocess_blur_threshold_img(img)
+            validator, preproc_img = self.__preprocess_blur_threshold_img(image)
 
             if validator:
 
@@ -597,10 +593,10 @@ class Image_Pre_Processing(object):
                 if validator:
 
                     # COM O CONTORNO ENCONTRADO A ÚLTIMA ETAPA, REALIZAMOS O CROP DA IMAGEM
-                    validator, image_cropped_contour = self.__crop_image_countour(img, contour)
+                    validator, image_cropped_contour = self.__crop_image_countour(image, contour)
 
                     # COM O CONTORNO ENCONTRADO NA ÚLTIMA ETAPA, CRIAMOS UMA MÁSCARA COM A ÁREA REPRESENTADA PELA MOLDURA;
-                    validator, mask = self.__generate_mask(img, contour)
+                    validator, mask = self.__generate_mask(image, contour)
 
                     if validator:
 
@@ -611,9 +607,15 @@ class Image_Pre_Processing(object):
 
                         # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
                         M = cv2.getPerspectiveTransform(pts1, pts2)
-                        image_warped = cv2.warpPerspective(img, M, (self.__output_size, self.__output_size))
+                        image_warped = cv2.warpPerspective(image, M, (self.__output_size, self.__output_size))
 
                 else:
-                    image_cropped_contour = image_warped = img
+                    image_cropped_contour = image_warped = image
 
-        return img, image_cropped_contour, image_warped
+
+        # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
+        image_view_functions.view_image(image, window_name="ORIGINAL")
+        image_view_functions.view_image(image_cropped_contour, window_name="CROPPED")
+        image_view_functions.view_image(image_warped, window_name="WARPED")
+
+        return image, image_cropped_contour, image_warped

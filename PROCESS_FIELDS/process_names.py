@@ -260,6 +260,7 @@ class Execute_Process_Names():
                 break
 
             if not validador:
+
                 # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
                 result_order_names = order_list_with_arguments(list_values=result_names,
                                                          number_column_order=1,

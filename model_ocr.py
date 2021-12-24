@@ -51,23 +51,21 @@ warnings.filterwarnings("ignore")
 
 class Execute_OCR_RG(object):
 
-    def __init__(self, pre_processing):
+    def __init__(self):
 
-        # 1 - DEFININDO A CLASSE DE PRÉ PROCESSAMENTO E SUAS PROPRIEDADES
-        self.__pre_processing = pre_processing
+        # 1 - DEFININDO A CLASSE PROPRIEDADE DE TAMANHO DE SAÍDA DA IMAGEM
+        self.__output_size = settings.OUTPUT_SIZE
 
-        # 2 - DEFININDO A CLASSE PROPRIEDADE DE TAMANHO DE SAÍDA DA IMAGEM
-        self.__output_size = self.__pre_processing.output_size
-
-        # 3 - DEFININDO OS CAMPOS A SEREM LIDOS
+        # 2 - DEFININDO OS CAMPOS A SEREM LIDOS
         self.FIELDS = self.__get_fields()
 
-        # 4 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
+        # 3 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
         self.COORDS = self.__get_coords()
 
-        # 5 - INICIANDO O ORQUESTRADOR DE EXTRAÇÃO DE INFOS
+        # 4 - INICIANDO O ORQUESTRADOR DE EXTRAÇÃO DE INFOS
         orchestra_extract_infos = Extract_Infos()
 
+        # 5 - DEFINIDO OS REGEX
         # SELECIONA APENAS LETRAS
         self.regex_only_letters = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS")
 
@@ -516,7 +514,7 @@ class Execute_OCR_RG(object):
         return info_extracted
 
 
-    def execute_pipeline_ocr(self, img_path):
+    def execute_pipeline_ocr(self, image):
 
         # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR - CAMPO A CAMPO
         info_field = {}
@@ -527,20 +525,12 @@ class Execute_OCR_RG(object):
         # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - BOUNDING BOX
         info_box = ""
 
-        # REALIZANDO O PRÉ PROCESSAMENTO
-        img_original, cropped_image, warped_img = self.__pre_processing.run(img_path)
-
         # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM CROPPED
-        cropped_image = cv2.resize(cropped_image, (600, 600),
-                                   interpolation=cv2.INTER_AREA)
-
-        # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
-        # image_view_functions.view_image(img_original, window_name="ORIGINAL")
-        # image_view_functions.view_image(cropped_image, window_name="CROPPED")
-        # image_view_functions.view_image(warped_img, window_name="WARPED")
+        image_resize = cv2.resize(image, (self.__output_size, self.__output_size),
+                                  interpolation=cv2.INTER_AREA)
 
         # APLICANDO O OCR - CAMPO A CAMPO
-        info_field = self.execute_ocr(cropped_image)
+        info_field = self.execute_ocr(image_resize)
 
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
         info_field = self.orchestra_pos_processing(info_field)
