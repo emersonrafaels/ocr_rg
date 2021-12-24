@@ -56,6 +56,14 @@ class Execute_Process_Names():
             # REALIZANDO A LEITURA DO TXT CONTENDO OS DADOS
             validador, data = read_txt(dir_data, encoding)
 
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            print("TENTANDO NOVO ENCODING - {}".format("UTF8"))
+
+            # REALIZANDO A LEITURA DO TXT CONTENDO OS DADOS USANDO UTF8
+            validador, data = read_txt(dir_data, encoding)
+
+        try:
             if validador:
 
                 # REALIZANDO A CONVERSÃO

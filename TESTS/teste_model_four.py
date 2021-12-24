@@ -103,7 +103,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
         for image in lista_imagens:
 
             # VERIFICANDO SE A IMAGEM JÁ FOI PROCESSADA
-            if not get_shortened_name(image) in imagens_anterior_processadas:
+            if not get_shortened_name(image) in []:
 
                 print("IMAGEM ATUAL: {}".format(image))
                 dt_hr_inicio = get_date_time_now("%d/%m/%Y %H:%M:%S")
@@ -116,7 +116,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
                                            dt_hr_inicio, dt_hr_fim)
 
 
-input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Jose_Clerton.PNG'
+input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\JaazielSousa.jpg'
 output_dir = r'RESULTADOS/MODEL_THREE'
 dir_bd_results = r'DB_RG_OCR_TESTS.db'
 

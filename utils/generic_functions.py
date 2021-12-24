@@ -171,13 +171,23 @@ def read_txt(data_dir, encoding=None):
 
     try:
         if encoding is not None:
-            data = open(data_dir, 'r', encoding=encoding).read()
+            data = open(data_dir, 'r', encoding=encoding, errors='ignore').read()
         else:
-            data = open(data_dir, 'r').read()
+            data = open(data_dir, 'r', errors='ignore').read()
 
         validador = True
     except Exception as ex:
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+        print("TENTANDO NOVO ENCODING - {}".format("UTF8"))
+
+        try:
+            # REALIZANDO A LEITURA DO TXT CONTENDO OS DADOS USANDO UTF8
+            data = open(data_dir, 'r', encoding='utf8', errors='ignore').read()
+
+            validador = True
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
     return validador, data
 
@@ -283,6 +293,45 @@ def format_values_int(list_input):
 
     # RETORNANDO A LISTA RESULTANTE
     return list_result
+
+
+def verify_find_intersection(data_verified, data_lists):
+
+    """
+
+        FUNÇÃO PARA VERIFICAR SE UM DADO (DATA_VERIFIED) ESTÁ CONTIDO
+        EM QUALQUER ELEMENTO DE UMA LISTA DE DADOS.
+
+        ESSA VERIFICAÇÃO É REALIZADA UTILIZANDO PARTE DA STRING,
+        NESSE CASO, UTILIZA-SE O MÉTODO 'FIND'.
+
+        # Arguments
+            data_verified               - Required : Dado a ser verificado (String)
+            data_lists                  - Required : Lista de dados (List)
+
+        # Returns
+            validador                   - Required : Validador da função (String)
+
+    """
+
+    # INICIANDO O VALIDADOR DA FUNÇÃO
+    validador = False
+
+    try:
+        # PERCORRENDO TODOS OS DADOS DA LISTA DE DADOS
+        for value in data_lists:
+
+            # VERIFICANDO SE O VALOR A SER VERIFICADO ESTÁ CONTIDO NA LISTA DE DADOS
+            # ESSA VERIFICAÇÃO É REALIZADA UTILIZANDO PARTE DA STRING
+            # NESSE CASO, UTILIZA-SE O MÉTODO 'FIND'
+            if value.find(data_verified) != -1 and data_verified != "":
+                validador = True
+                break
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+    return validador
 
 
 def get_date_time_now(return_type):
