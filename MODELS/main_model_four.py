@@ -398,9 +398,17 @@ class model_four():
                 nome = result_nome_alternativa_dois[0]
 
             # DEFININDO FILIAÇÃO
-            if len(result_filiacao_alternativa_um) > 0:
+            if len(result_filiacao_alternativa_um) == 2:
+                # NOME DO PAI - ALTERNATIVA 1
+                # NOME DA MÃE - ALTERNATIVA 1
                 nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_um[1]
+            if len(result_filiacao_alternativa_um) == 1:
+                # NOME DO PAI - ALTERNATIVA 1
+                # NOME DA MÃE - ALTERNATIVA 2
+                nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_dois[1]
             else:
+                # NOME DO PAI - ALTERNATIVA 2
+                # NOME DA MÃE - ALTERNATIVA 2
                 nome_pai, nome_mae = result_filiacao_alternativa_dois[0], result_filiacao_alternativa_dois[1]
 
         except Exception as ex:
