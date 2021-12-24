@@ -251,40 +251,42 @@ class model_four():
 
         result_names = []
 
+        # MANTENDO APENAS LETRAS
+        text_only_letters = re.sub(pattern=pattern_only_letters,
+                                   string=text,
+                                   repl=" ").replace("  ", " ").strip()
+
         try:
 
-            for value_x in text.split("\n"):
+            for result_split in text_only_letters.split("\n"):
 
                 if not validador:
 
-                    # MANTENDO APENAS LETRAS
-                    result_split = re.sub(pattern=pattern_only_letters,
-                                          string=value_x,
-                                          repl=" ").replace("  ", " ").strip()
+                    for value_x in result_split.split(" E "):
 
-                    for value_y in result_split.split(" "):
+                        for value_y in value_x.split(" "):
 
-                        # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
-                        if value_y != "" and not applied_filter_not_intesection_list(
-                                [value_split for value_split in value_y.split(" ") if value_split != ""],
-                                filters_validate + settings.WORDS_BLACK_LIST_NAMES,
-                                mode="FIND", min_len=3):
+                            # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
+                            if value_y != "" and not applied_filter_not_intesection_list(
+                                    [value_split for value_split in value_y.split(" ") if value_split != ""],
+                                    filters_validate + settings.WORDS_BLACK_LIST_NAMES,
+                                    mode="FIND", min_len=3):
 
-                            #print("NOME: TESTANDO: {}".format(value_y))
+                                #print("NOME: TESTANDO: {}".format(value_y))
 
-                            # VALIDANDO SE É UM NOME VÁLIDO
-                            result_valid_name = self.orchestra_process_names.get_first_name_valid(value_y)
+                                # VALIDANDO SE É UM NOME VÁLIDO
+                                result_valid_name = self.orchestra_process_names.get_first_name_valid(value_y)
 
-                            if result_valid_name[0][0]:
-                                result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
+                                if result_valid_name[0][0]:
+                                    result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
 
-                                if result_valid_name[0][-1][0][-1] == 100:
-                                    break
+                                    if result_valid_name[0][-1][0][-1] == 100:
+                                        break
 
-                                # VERIFICANDO SE JÁ HÁ 3 VALORES COM 100% DE SIMILARIDADE
-                                if len(list(filter(lambda x: x == 100, [value[1] for value in result_names]))) >= 3:
-                                    validador = True
-                                    break
+                                    # VERIFICANDO SE JÁ HÁ 3 VALORES COM 100% DE SIMILARIDADE
+                                    if len(list(filter(lambda x: x == 100, [value[1] for value in result_names]))) >= 3:
+                                        validador = True
+                                        break
 
                 else:
                     break
@@ -297,48 +299,48 @@ class model_four():
             # OBTENDO OS VALORES DE NOME, NOME MÃE E NOME PAI
             if len(result_names) == 1:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = text_only_letters[text_only_letters.find(result_names[0][0]):].split("\n")[0]
 
                 # VERIFICANDO O GÊNERO
                 if result_names[0][-1] == "M":
 
-                    nome_pai = text[text.find(result_names[0][0]):].split("\n")[0]
+                    nome_pai = text_only_letters[text_only_letters.find(result_names[0][0]):].split("\n")[0].split(" E ")[0]
                     nome_mae = ""
 
                 else:
 
                     nome_pai = ""
-                    nome_mae = text[text.find(result_names[0][0]):].split("\n")[0]
+                    nome_mae = text_only_letters[text_only_letters.find(result_names[0][0]):].split("\n")[0]
 
             elif len(result_names) == 2:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = text_only_letters[text_only_letters.find(result_names[0][0]):].split("\n")[0]
 
                 # VERIFICANDO O GÊNERO
                 if result_names[1][-1] == "M":
 
-                    nome_pai = text[text.find(result_names[1][0]):].split("\n")[0]
+                    nome_pai = text_only_letters[text_only_letters.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
                     nome_mae = ""
 
                 else:
 
                     nome_pai = ""
-                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+                    nome_mae = text_only_letters[text_only_letters.find(result_names[1][0]):].split("\n")[0]
 
             elif len(result_names) > 2:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = text_only_letters[text_only_letters.find(result_names[0][0]):].split("\n")[0]
 
                 # VERIFICANDO O GÊNERO
                 if result_names[1][-1] == "M":
 
-                    nome_pai = text[text.find(result_names[1][0]):].split("\n")[0]
-                    nome_mae = text[text.find(result_names[2][0]):].split("\n")[0]
+                    nome_pai = text_only_letters[text_only_letters.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_only_letters[text_only_letters.find(result_names[2][0]):].split("\n")[0]
 
                 else:
 
-                    nome_pai = text[text.find(result_names[2][0]):].split("\n")[0]
-                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+                    nome_pai = text_only_letters[text_only_letters.find(result_names[2][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_only_letters[text_only_letters.find(result_names[1][0]):].split("\n")[0]
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
