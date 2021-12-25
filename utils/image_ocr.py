@@ -54,7 +54,8 @@ class ocr_functions():
                  lang_padrao=settings.TESSERACT_LANG,
                  config_tesseract_psm=settings.TESSERACT_PSM,
                  config_tesseract_oem=settings.TESSERACT_OEM,
-                 tipo_retorno_ocr_input=settings.TIPO_OCR):
+                 tipo_retorno_ocr_input=settings.TIPO_OCR,
+                 visualiza_ocr_completo=settings.VISUALIZA_OCR_COMPLETO):
 
 
         # 1 - LINGUAGEM PADRÃO DO OCR
@@ -71,6 +72,7 @@ class ocr_functions():
 
         # 5 - TIPO DE RETORNO DO OCR SELECIONADA
         self.tipo_retorno_ocr = tipo_retorno_ocr_input
+        self.visualiza_ocr_completo = visualiza_ocr_completo
 
 
     @staticmethod
@@ -284,11 +286,28 @@ class ocr_functions():
     @staticmethod
     def convert_resultado_ocr_completo(input_result_ocr):
 
-        result_ocr = " ".join(input_result_ocr["text"])
+        """
 
+            APÓS A REALIZAÇÃO DO OCR COMPLETO (POR BOUNDING BOX),
+            ESSA FUNÇÃO CONCATENA O TEXTO, RESULTANDO EM UMA ÚNICA STRING.
+
+            # Arguments
+                input_result_ocr              - Required : Resultado do OCR (List)
+            # Returns
+                list_result                   - Required : Resultado do OCR (List)
+                text_result                   - Required : Resulado do OCR concatenado
+                                                           em uma única string (String)
+
+        """
+
+        # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO O RESULTADO FINAL
         string_atual = ""
         list_result = []
 
+        # CONCATENANDO O RESULTADO DO OCR (CONTIDO NO CAMPO 'text' DO DICT)
+        result_ocr = " ".join(input_result_ocr["text"])
+
+        # PERCORRENDO O TEXTO CONCATENADO E REALIZANDO AS QUEBRAS DE LINHA
         for value in str(result_ocr).strip().split(" "):
 
             text_valid = False
