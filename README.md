@@ -1,25 +1,118 @@
-# RG_OCR
+<h1 align="center">
+    <img alt="OCR RG" title="#OCRRG" src="./assets/banner.png" />
+</h1>
 
-This repository is intended to perform Optical Character Recognition in a Brazilian ID document.
+<h4 align="center"> 
+	🚧 OCR RG 1.0 🚀 em desenvolvimento... 🚧
+</h4>
 
-In this project, it is assumed that the input image may not be in the best perspective in order for this task to be performed. Therefore, some steps must be taken to preprocess the image, before applying OCR.
+<p align="center">
+  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/emersonrafaels/ocr_rg?color=%2304D361">
 
-This project is a fork of: https://github.com/gfluz94/RG_OCR/
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/emersonrafaels/ocr_rg">
 
-### Dewarping
+  	
+  <a href="https://www.linkedin.com/in/emerson-rafael/">
+    <img alt="Siga no Linkedin" src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white">
+  </a>
+	
+  
+  <a href="https://github.com/emersonrafaels/ocr_rg/commits/main">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/emersonrafaels/ocr_rg">
+  </a>
 
-1. Image is read in gray-scale;
-2. Gaussian Blur is performed to remove any available noise;
-3. Adaptative Threshold is applied to blurred image;
-4. We find the contour whose area is the greatest, since it represents the document frame;
-5. With the contour found in the last step, we create a mask with the area represented by the frame;
-6. Using this mask, we are able to find the four corners of the ID document in the original image;
-7. Therefore, we apply **dewarping** and transform our perspective, so the four corners of the document are the same as the image.
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-brightgreen">
+   <a href="https://github.com/emersonrafaels/ocr_rg/stargazers">
+    <img alt="Stargazers" src="https://img.shields.io/github/stars/emersonrafaels/ocr_rg?style=social">
+  </a>
+</p>
 
-### OCR
 
-Since we have an image with better resolution and we know the document's template, we apply Optical Character Recognition to it by using **pytesseract** API.
+## 💻 Sobre o projeto
 
-### Web Application
+📦 **OCR RG** é um projeto que permite **realizar leitura dos campos do documento de identidade RG**
 
-We also have a web application developed with **Flask**, so the user can upload an image of the document and then the text information contained within is displayed on the screen.
+Atualmente funcionando para:
+
+ 1. Registro Geral (RG)
+ 2. Data de expedição
+ 3. Nome
+ 4. Nome do pai
+ 5. Nome da mãe
+ 6. Data de nascimento
+ 7. Cidade de nascimento
+ 8. Estado de nascimento
+ 9. Cidade de origem
+ 10. Estado de origem 
+ 11. Orgão emissor (Em desenvolvimento)
+
+## 🛠  Tecnologias
+
+As seguintes ferramentas foram usadas na construção do projeto:
+
+- [Python]
+
+## ♤♠♧♣  Modelos
+
+ - **Modelo 1** - Detecção de campos utilizando HOG e SVM (Em desenvolvimento)
+ - **Modelo 2** - Aplicação de uma máscara de acordo com o template do OCR, obtendo os campos de acordo com as coordenadas pré definidas.
+ - **Modelo 3** - Aplicação do OCR no documento inteiro.
+ - **Modelo 4** - Aplicação da técnica de bounding box recursivo, identificando locais que possuem texto e realizando o OCR em seguida.
+
+## 🚀 Como executar o projeto
+
+1. **Instalando**: pip install -r requirements.txt
+2. **Seguir modelos apresentados no diretório de testes**:
+
+Ex: Executando o modelo 3: **OCR no documento inteiro**:
+
+```python
+from MODELS.main_model_three import main_model
+def orchestra_test(input_dir, output_dir, dir_db_results):
+
+    # CRIANDO O DIRETÓRIO QUE RECEBERÁ AS IMAGENS PROCESSADAS
+    validador = create_path(output_dir)
+
+    if validador:
+
+        # OBTENDO TODAS AS IMAGENS DA PASTA
+        lista_imagens = get_files_directory(input_dir, [".png", "jpg"])
+
+        # PERCORRENDO TODAS AS IMAGENS PARA OCR
+        for image in lista_imagens:
+
+              print("IMAGEM ATUAL: {}".format(image))
+              dt_hr_inicio = get_date_time_now("%d/%m/%Y %H:%M:%S")
+
+              result_image = main_model(image)
+
+              dt_hr_fim = get_date_time_now("%d/%m/%Y %H:%M:%S")
+
+              _ = insert_processed_image(dir_bd_results, image, result_image,
+                                         dt_hr_inicio, dt_hr_fim)
+
+input_dir = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Jose_Clerton.png'
+output_dir = r'RESULTADOS/MODEL_THREE'
+dir_bd_results = r'DB_RG_OCR_TESTS.db'
+
+# CHAMANDO O ORQUESTRADOR DE TESTES
+orchestra_test(input_dir, output_dir, dir_bd_results)
+```
+Os **arquivos de teste mostram como realizar a chamada dos modelos**, ao mesmo tempo que **implementar um fluxo completo para realização de testes e inserção dos resultados em um banco de dados**.
+
+## ➊ Pré-requisitos
+
+Antes de começar, você vai precisar ter instalado em sua máquina as seguintes ferramentas (O download pode ser realizado pela própria página do Python ou Anaconda):
+[Python](https://www.anaconda.com/products/individual).
+
+## [≝] Testes
+Os testes estão na pasta: **TESTS/***.
+Nela é possível verificar os testes disponíveis em arquivos individuais para cada um dos modelos de OCR de RG disponíveis.
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT.
+
+Feito com ❤️ por **Emerson Rafael** 👋🏽 [Entre em contato!](https://www.linkedin.com/in/emerson-rafael/)
+
+[Python]: https://www.python.org/downloads/
