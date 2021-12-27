@@ -64,7 +64,7 @@ As seguintes ferramentas foram usadas na construção do projeto:
 1. **Instalando**: pip install -r requirements.txt
 2. **Seguir modelos apresentados no diretório de testes**:
 
-Ex: Executando o modelo 3: **OCR no documento inteiro**:
+Ex: Executando o **modelo 3: OCR no documento inteiro**:
 
 ```python
 from MODELS.main_model_three import main_model
@@ -98,7 +98,7 @@ dir_bd_results = r'DB_RG_OCR_TESTS.db'
 # CHAMANDO O ORQUESTRADOR DE TESTES
 orchestra_test(input_dir, output_dir, dir_bd_results)
 ```
-Os **arquivos de teste mostram como realizar a chamada dos modelos**, ao mesmo tempo que **implementar um fluxo completo para realização de testes e inserção dos resultados em um banco de dados**.
+Os **arquivos de teste mostram como realizar a chamada dos modelos**, ao mesmo tempo que **implementam um fluxo completo para realização de testes e inserção dos resultados em um banco de dados**.
 
 ## ➊ Pré-requisitos
 
