@@ -597,3 +597,41 @@ def order_list_with_arguments(list_values, number_column_order=1, limit=1):
     return return_list
 
 
+def remove_line_with_black_list_words(text, list_words=[]):
+
+    """
+
+        FUNÇÃO PARA REMOVER LINHAS QUE CONTÉM PALAVRAS NÃO DESEJADAS
+
+        # Arguments
+            text                  - Required : Texto a ser analisado (String)
+            list_words            - Optional : Lista de palavras a serem buscadas (List)
+
+        # Returns
+            return_text          - Required : Texto resultante após a análise (String)
+
+    """
+
+    # INICIANDO O VALIDADOR
+    validador = False
+
+    return_text = ""
+
+    for line in text.split("\n"):
+
+        validador = False
+
+        # PERCORRENDO TODAS AS PALAVRAS DA BLACK LIST
+        for value in list_words:
+
+            if line.find(value)!=-1:
+                # A PALAVRA FOI ENCONTRADA
+                validador = True
+                break
+
+        if validador is False:
+            # A PALAVRA NÃO FOI ENCONTRADA
+            return_text = return_text + "\n" + line
+
+    # RETORNANDO O TEXTO FINAL
+    return return_text

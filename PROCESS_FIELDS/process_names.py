@@ -6,6 +6,7 @@ from dynaconf import settings
 from CONFIG import config
 from UTILS.extract_infos import Extract_Infos
 from UTILS.generic_functions import read_txt, applied_filter_not_intesection_list, order_list_with_arguments
+from UTILS.generic_functions import verify_find_intersection, remove_line_with_black_list_words
 
 
 class Execute_Process_Names():
@@ -274,3 +275,359 @@ class Execute_Process_Names():
                     info_extracted[field] = ""
 
         return info_extracted
+
+
+    def find_nome_filiacao(self, text, pattern_find, limit=1):
+
+        """
+
+            VERIFICA SE NOME OU FILIAÇÃO (pattern_find)
+            ESTÃO CONTIDOS NO TEXTO, CASO ESTEJAM
+            OBTÉM UM NÚMERO SEGUINTE DE LINHAS (limit)
+
+            # Arguments
+                text                 - Required : Texto a ser analisado (String)
+                filters_validate     - Optional : Filtros e validações
+                                                  a serem aplicadas (List)
+                limit                - Optional : Número de linhas
+                                                  seguintes desejadas (Integer)
+
+
+            # Returns
+                result               - Required : Nomes obtidos (List)
+
+        """
+
+        # INICIANDO O VALIDADOR DA FUNÇÃO
+        validador_verify_find_intersection = False
+
+        # INICIANDO A VARIÁVEL AUXILIAR DE RESULTADO DE NOMES APÓS A VALIDAÇÃO
+        result_names = []
+
+        # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO FINAL
+        result = ""
+
+        # INICIANDO A VARIÁVEL DE RETORNO
+        result_final = []
+
+        try:
+            # CRIAÇÃO DA LISTA AUXILIAR
+            # A LISTA AUXILIAR RECEBERÁ APENAS VALORES NÃO VÁZIOS E COM TAMANHO MAIOR QUE 1
+            list_aux = [value.strip() for value in text.split("\n") if
+                        (value != "" and len(value.split(" ")) > 1) or verify_find_intersection(value, pattern_find)]
+
+            # VERIFICANDO SE O PATTERN ESTÁ EM ALGUMA POSIÇÃO DO TEXTO
+            validador_verify_find_intersection = [value for value in pattern_find if
+                                                  verify_find_intersection(value, list_aux)]
+
+            if validador_verify_find_intersection:
+
+                # OBTENDO O VALOR DE INTERSECÇÃO (USANDO O PRIMEIRO VALOR VALIDADO)
+                pattern_find = [value for value in list_aux if value.find(validador_verify_find_intersection[0]) != -1][
+                    0]
+
+                result = list(map(list_aux.__getitem__, range(list_aux.index(pattern_find) + 1,
+                                                              list_aux.index(pattern_find) + 1 + limit,
+                                                              1)))
+
+                for value in result:
+
+                    # REINICIANDO A VARIÁVEL DE RESULTNAMES
+                    result_names = []
+
+                    for value_y in value.split(" "):
+
+                        # VALIDANDO SE É UM NOME VÁLIDO
+                        result_valid_name = Execute_Process_Names.get_first_name_valid(self,
+                                                                                       value_y)
+
+                        if result_valid_name[0][0]:
+                            result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
+
+                            if result_valid_name[0][-1][0][-1] == 100:
+                                break
+
+                # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
+                result_names = order_list_with_arguments(list_values=result_names,
+                                                         number_column_order=1,
+                                                         limit=1)
+
+                # ATUALIZANDO O NOME FINAL
+                result = value[value.find(result_names[0][0]):].split("\n")[0]
+
+                result_final.append(result)
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        return result_final
+
+
+    def get_names(self, text, filters_validate=[],
+                  pattern_only_letters=settings.REGEX_ONLY_LETTERS):
+
+        """
+
+            ORQUESTRA A OBTENÇÃO DOS CAMPOS DE NOME.
+
+            OS CAMPOS OBTIDOS SAO:
+                1) NOME COMPLETO
+                2) NOME DO PAI
+                3) NOME DA MÃE
+
+            RECEBE A OPÇÃO DE RETIRAR DA LISTA RESULTANTE
+            VALORES DE UMA LISTA AUXILIAR ('list_validate')
+
+            # Arguments
+                text                 - Required : Texto a ser analisado (String)
+                filters_validate     - Optional : Filtros e validações
+                                                  a serem aplicadas (List)
+                regex_only_letters   - Optional : Pattern a ser utilizado (Regex)
+
+
+            # Returns
+                result_names         - Required : Nomes obtidos (List)
+
+        """
+
+        # INICIANDO AS VARIÁVEIS
+        nome = ""
+        nome_pai = ""
+        nome_mae = ""
+
+        # INICIANDO O VALIDADOR DE FIM DA FUNÇÃO
+        validador = False
+
+        result_names = []
+
+        # REALIZANDO A LIMPEZA DO TEXTO, RETIRANDO BLACKLIST
+        text = remove_line_with_black_list_words(text, settings.WORDS_BLACK_LIST_NAMES)
+
+        try:
+
+            for value_x in text.split("\n"):
+
+                if not validador:
+
+                    # MANTENDO APENAS LETRAS
+                    result_split = re.sub(pattern=pattern_only_letters,
+                                          string=value_x,
+                                          repl=" ").replace("  ", " ").strip()
+
+                    if len(result_split.split(" ")) > 1:
+
+                        for value_y in result_split.split(" "):
+
+                            # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
+                            if value_y != "" and not applied_filter_not_intesection_list(
+                                    [value_split for value_split in value_y.split(" ") if value_split != ""],
+                                    filters_validate + settings.WORDS_BLACK_LIST_NAMES,
+                                    mode="FIND", min_len=3):
+
+                                # print("NOME: TESTANDO: {}".format(value_y))
+
+                                # VALIDANDO SE É UM NOME VÁLIDO
+                                result_valid_name = Execute_Process_Names.get_first_name_valid(self,
+                                                                                               value_y)
+
+                                if result_valid_name[0][0]:
+                                    result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
+
+                                    if result_valid_name[0][-1][0][-1] == 100:
+                                        break
+
+                                    # VERIFICANDO SE JÁ HÁ 3 VALORES COM 100% DE SIMILARIDADE
+                                    if len(list(filter(lambda x: x == 100, [value[1] for value in result_names]))) >= 3:
+                                        validador = True
+                                        break
+
+                else:
+                    break
+
+            # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
+            result_names = order_list_with_arguments(list_values=result_names,
+                                                     number_column_order=1,
+                                                     limit=3)
+
+            # OBTENDO OS VALORES DE NOME, NOME MÃE E NOME PAI
+            if len(result_names) == 1:
+
+                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+
+                # VERIFICANDO O GÊNERO
+                if result_names[0][-1] == "M":
+
+                    nome_pai = \
+                        text[text.find(result_names[0][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = ""
+
+                else:
+
+                    nome_pai = ""
+                    nome_mae = text[text.find(result_names[0][0]):].split("\n")[0]
+
+            elif len(result_names) == 2:
+
+                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+
+                # VERIFICANDO O GÊNERO
+                if result_names[1][-1] == "M":
+
+                    nome_pai = \
+                        text[text.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = ""
+
+                else:
+
+                    nome_pai = ""
+                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+
+            elif len(result_names) > 2:
+
+                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+
+                # VERIFICANDO O GÊNERO
+                if result_names[1][-1] == "M":
+
+                    nome_pai = \
+                        text[text.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text[text.find(result_names[2][0]):].split("\n")[0]
+
+                else:
+
+                    nome_pai = \
+                        text[text.find(result_names[2][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        return nome, nome_pai, nome_mae
+
+
+    @staticmethod
+    def choice_final_names(result_nome_alternativa_um,
+                           result_filiacao_alternativa_um,
+                           result_nome_alternativa_dois,
+                           result_filiacao_alternativa_dois):
+
+        """
+
+           OSQUESTRA A DEFINIÇÃO DOS NOMES:
+
+           1) NOME
+           2) NOME DO PAI
+           3) NOME DA MÃE
+
+           A PARTIR DOS NOMES OBTIDOS ATRAVÉS DAS DUAS ALTERNATIVAS
+
+           1) ALTERNATIVA 1 - PROCURANDO TERMOS COMO NOME/FILIAÇÃO
+           2) ALTERNATIVA 2 - PERCORRENDO O TEXTO INTEIRO
+
+            # Arguments
+                result_nome_alternativa_um          - Required : Nome obtido na
+                                                                 alternativa de execução um (String)
+                result_filiacao_alternativa_um      - Required : Filiação obtida na
+                                                                 alternativa de execução um (String)
+                result_nome_alternativa_dois        - Required : Nome obtido na
+                                                                 alternativa de execução dois (String)
+                result_filiacao_alternativa_dois    - Required : Filiação obtida na
+                                                                 alternativa de execução dois (String)
+
+            # Returns
+                nome                                - Required : Nome obtido (String)
+                nome_pai                            - Required : Nome do pai obtido (String)
+                nome_mae                            - Required : Nome da mãe obtido (String)
+
+        """
+
+        # INICIANDO AS VARIÁVEIS
+        nome = ""
+        nome_pai = ""
+        nome_mae = ""
+
+        try:
+            print("ALTERNATIVA 1: NOME {} | FILIAÇÃO: {}".format(result_nome_alternativa_um,
+                                                                 result_filiacao_alternativa_um))
+            print("ALTERNATIVA 2: NOME {} | FILIAÇÃO: {}".format(result_nome_alternativa_dois,
+                                                                 result_filiacao_alternativa_dois))
+
+            # DEFININDO O NOME
+            if len(result_nome_alternativa_um) > 0:
+                nome = result_nome_alternativa_um[0]
+            else:
+                nome = result_nome_alternativa_dois[0]
+
+            # DEFININDO FILIAÇÃO
+            if len(result_filiacao_alternativa_um) == 2:
+                # NOME DO PAI - ALTERNATIVA 1
+                # NOME DA MÃE - ALTERNATIVA 1
+                nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_um[1]
+            if len(result_filiacao_alternativa_um) == 1:
+                # NOME DO PAI - ALTERNATIVA 1
+                # NOME DA MÃE - ALTERNATIVA 2
+                nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_dois[1]
+            else:
+                # NOME DO PAI - ALTERNATIVA 2
+                # NOME DA MÃE - ALTERNATIVA 2
+                nome_pai, nome_mae = result_filiacao_alternativa_dois[0], result_filiacao_alternativa_dois[1]
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+        return nome, nome_pai, nome_mae
+
+
+    def orchestra_get_names(self, text, filters_validate=[]):
+
+        """
+
+           OSQUESTRA A OBTENÇÃO DOS CAMPOS DE NOMES:
+
+           PARA ISSO UTILIZA DUAS ALTERNATIVAS DIFERENTES:
+
+           1) ALTERNATIVA 1 - PROCURANDO TERMOS COMO NOME/FILIAÇÃO
+           2) ALTERNATIVA 2 - PERCORRENDO O TEXTO INTEIRO
+
+           AO FINAL, É UTILIZADA A FUNÇÃO 'choice_final_names'
+           PARA DEFINIÇÃO DOS NOMES FINAIS:
+
+           1) NOME
+           2) NOME DO PAI
+           3) NOME DA MÃE
+
+            # Arguments
+                text                       - Required : Texto a ser analisado (String)
+                filters_validate           - Optional : Filtros e validações
+                                                  a serem aplicadas (List)
+
+            # Returns
+                nome                       - Required : Nome obtido (String)
+                nome_pai                   - Required : Nome do pai obtido (String)
+                nome_mae                   - Required : Nome da mãe obtido (String)
+
+        """
+
+        # VERIFICANDO SE É POSSÍVEL ENCONTRAR AS PALAVRAS NOMES E FILIAÇÃO - ALTERNATIVA 1
+        nome_alternativa_um = Execute_Process_Names.find_nome_filiacao(self, text,
+                                                                       pattern_find=settings.WORDS_LIST_NAMES,
+                                                                       limit=1)
+
+        filiacao_alternativa_um = Execute_Process_Names.find_nome_filiacao(self, text,
+                                                                           pattern_find=settings.WORDS_LIST_FILIACAO,
+                                                                           limit=1)
+
+        # OBTENDO OS NOMES - ALTERNATIVA 2
+        nome_alternativa_dois, nome_pai_alternativa_dois, \
+        nome_mae_alternativa_dois = Execute_Process_Names.get_names(self,
+                                                                    text,
+                                                                    filters_validate,
+                                                                    settings.REGEX_ONLY_LETTERS)
+
+        # ENVIANDO OS NOMES OBTIDOS PARA DEFINIÇÃO DOS NOMES A SEREM UTILIZADOS
+        nome, nome_pai, nome_mae = Execute_Process_Names.choice_final_names(nome_alternativa_um,
+                                                                            filiacao_alternativa_um,
+                                                                            [nome_alternativa_dois],
+                                                                            [nome_pai_alternativa_dois, nome_mae_alternativa_dois])
+
+        return nome, nome_pai, nome_mae

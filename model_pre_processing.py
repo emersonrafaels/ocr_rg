@@ -174,7 +174,7 @@ class Image_Pre_Processing(object):
             # REALIZANDO O RESIZE DA IMAGEM COM AS NOVAS DIMENSÕES
             image_resize = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-            print("RESIZE DA IMAGEM APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
+            print("OCR RG - RESIZE DA IMAGEM APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             return image_resize
 
