@@ -17,16 +17,12 @@ from UTILS.deep_check_orientation.deep_check_orientation import check_orientatio
 
 class Execute_Orgao_Emissor():
 
-    def __init__(self, dir_image):
+    def __init__(self):
 
         # 1 - REALIZANDO A LEITURA DO BANCO DE DADOS DE NOMES - GENEROS
         self.data_orgao_emissor = self.__get_orgao_emissor(config.DIR_DATA_ORGAOS_EMISSOR)
 
-
-        # 2 - OBTENDO O LOCAL DA IMAGEM
-        self.dir_image = dir_image
-
-        # 3 - INSTANCIANDO AS OUTRAS CLASSES UTILIZADAS
+        # 2 - INSTANCIANDO AS OUTRAS CLASSES UTILIZADAS
         self.orchestra_extract_infos = Extract_Infos()
 
 

@@ -172,7 +172,7 @@ class model_four_frente():
         print("-"*50)
 
         # OBTENDO O ORGÃO EMISSOR
-
+        Execute_Orgao_Emissor().get_orgao_emissor(text, list_orgao_emissor=None)
 
 
         # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
