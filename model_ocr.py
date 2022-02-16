@@ -13,6 +13,9 @@
     7) CPF
     8) CIDADE ORIGEM
     9) ESTADO ORIGEM.
+    10) ESTADO NASCIMENTO
+    11) CIDADE NASCIMENTO
+    12) ORGÃO EMISSOR
 
     # Arguments
         object                  - Required : Imagem para aplicação do OCR (Base64 | Path | Numpy Array)
@@ -51,29 +54,26 @@ warnings.filterwarnings("ignore")
 
 class Execute_OCR_RG(object):
 
-    def __init__(self):
+    def __init__(self, side_document="VERSO"):
 
-        # 1 - DEFININDO A CLASSE PROPRIEDADE DE TAMANHO DE SAÍDA DA IMAGEM
+        # 1 - OBTENDO O LADO DO DOCUMENTO A SER LIDO
+        self.side_document = side_document
+
+        # 2 - DEFININDO A CLASSE PROPRIEDADE DE TAMANHO DE SAÍDA DA IMAGEM
         self.__output_size = settings.OUTPUT_SIZE
 
-        # 2 - DEFININDO OS CAMPOS A SEREM LIDOS
+        # 3 - DEFININDO OS CAMPOS A SEREM LIDOS
         self.FIELDS = self.__get_fields()
 
-        # 3 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
+        # 4 - OBTENDO AS COORDENADAS PARA CROP DOS CAMPOS
         self.COORDS = self.__get_coords()
 
-        # 4 - INICIANDO O ORQUESTRADOR DE EXTRAÇÃO DE INFOS
+        # 5 - INICIANDO O ORQUESTRADOR DE EXTRAÇÃO DE INFOS
         orchestra_extract_infos = Extract_Infos()
 
-        # 5 - DEFINIDO OS REGEX
+        # 6 - DEFINIDO OS REGEX
         # SELECIONA APENAS LETRAS
         self.regex_only_letters = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS")
-
-        # SELECIONA APENAS NÚMEROS
-        self.regex_only_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_NUMBERS")
-
-        # SELECIONA APENAS LETRAS E NÚMEROS
-        self.regex_only_letters_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_NUMBERS")
 
         # SELECIONA APENAS LETRAS, PONTOS, BARRAS, TRAÇOS E NÚMEROS
         self.regex_only_letters_numbers_dot_bars_dashes = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_NUMBERS_DOT_BARS_DASHES")
@@ -81,22 +81,16 @@ class Execute_OCR_RG(object):
         # SELECIONA APENAS A LETRA X, PONTOS, BARRAS, TRAÇOS E NÚMEROS
         self.regex_only_x_numbers_dot_bars_dashes = orchestra_extract_infos.get_value_regex("REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES")
 
-        # SELECIONA APENAS A LETRA X E NÚMEROS
-        self.regex_only_x_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_X_NUMBERS")
-
-        # SELECIONA APENAS DATAS
-        self.regex_only_dates = orchestra_extract_infos.get_value_regex("REGEX_ONLY_DATES")
-
         # SELECIONA APENAS LETRAS, PONTO (.) E TRAÇO (-)
         self.regex_only_letters_dot_dash = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_DOT_DASH")
 
-        # 6 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
+        # 7 - INICIANDO OS PERCENTUAIS DE MATCH DEFAULT
         self.default_percent_match = settings.DEFAULT_PERCENTUAL_MATCH
 
-        # 7 - DEFININDO SE DEVE HAVER PRÉ PROCESSAMENTO DOS ITENS ANTES DO CÁLCULO DE SEMELHANÇA
+        # 8 - DEFININDO SE DEVE HAVER PRÉ PROCESSAMENTO DOS ITENS ANTES DO CÁLCULO DE SEMELHANÇA
         self.similarity_pre_processing = settings.DEFAULT_PRE_PROCESSING
 
-        # 8 - INICIANDO A VARIÁVEL QUE CONTÉM O LIMIT NA CHAMADA DE MÁXIMAS SIMILARIDADES
+        # 9 - INICIANDO A VARIÁVEL QUE CONTÉM O LIMIT NA CHAMADA DE MÁXIMAS SIMILARIDADES
         self.limit_result_best_similar = settings.DEFAULT_LIMIT_RESULT_BEST_SIMILAR
 
 
@@ -127,7 +121,13 @@ class Execute_OCR_RG(object):
             # DEFININDO OS PARÂMETROS DE CONEXÃO
             caminho_bd_bds = config.DIR_BD_OCR
             ssql_bds = settings.QUERY_FIELDS
-            params_bds = (None,)
+
+            # DEFININDO O PARÂMETRO PARA QUERY DOS CAMPOS ATIVOS
+            if self.side_document == "FRENTE":
+                params_bds = (0,)
+            else:
+                params_bds = (1,)
+
             tipo_query_bds = settings.QUERY_TYPE_FIELDS
 
             # EXECUTANDO A QUERY E OBTENDO O RESULTADO
@@ -138,7 +138,7 @@ class Execute_OCR_RG(object):
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
             result_list_fields_active = format_values_int(settings.FIELDS.values())
 
-        # RETORNANDO A TUPLA CONTENDO (MUNICIPIO, UF, ESTADO)
+        # RETORNANDO A TUPLA CONTENDO OS CAMPOS DESEJADOS
         return result_list_fields_active
 
 
@@ -165,7 +165,13 @@ class Execute_OCR_RG(object):
             # DEFININDO OS PARÂMETROS DE CONEXÃO
             caminho_bd_bds = config.DIR_BD_OCR
             ssql_bds = settings.QUERY_COORD
-            params_bds = (None,)
+
+            # DEFININDO O PARÂMETRO PARA QUERY DOS CAMPOS ATIVOS
+            if self.side_document == "FRENTE":
+                params_bds = (0,)
+            else:
+                params_bds = (1,)
+
             tipo_query_bds = settings.QUERY_TYPE_COORD
 
             # EXECUTANDO A QUERY E OBTENDO O RESULTADO
@@ -395,10 +401,10 @@ class Execute_OCR_RG(object):
             info_extracted[field[0]] = ocr_functions().Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
-            # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
+            image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
-            # image_view_functions.view_image_with_coordinates(roi, window_name=field)
+            image_view_functions.view_image_with_coordinates(roi, window_name=field)
 
         return info_extracted
 
@@ -478,6 +484,7 @@ class Execute_OCR_RG(object):
         """
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
+
         for column in ["RG", "CPF"]:
             info_extracted[column] = self.__postprocess_num(info_extracted[column])
             info_extracted[column] = info_extracted[column].split(",")

@@ -430,6 +430,7 @@ class ocr_functions():
 
             validador = True
 
+
         except Exception as ex:
             print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 

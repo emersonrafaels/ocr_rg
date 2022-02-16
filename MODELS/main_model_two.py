@@ -14,6 +14,8 @@
     8) CIDADE ORIGEM
     9) ESTADO ORIGEM.
 
+    MODELO UTILIZADO: MODELO DE MÁSCARAS
+
     # Arguments
         object                  - Required : Imagem para aplicação do OCR (Base64 | Path | Numpy Array)
     # Returns
@@ -25,7 +27,7 @@
 
 __version__ = "1.0"
 __author__ = """Emerson V. Rafael (EMERVIN)"""
-__data_atualizacao__ = "05/11/2021"
+__data_atualizacao__ = "15/02/2022"
 
 
 from inspect import stack
