@@ -134,11 +134,10 @@ class model_three_frente():
         print("-" * 50)
 
         # OBTENDO O ORGÃO EMISSOR
+        result_similarity_orgao_emissor, orgao_emissor, sigla = Execute_Orgao_Emissor().get_orgao_emissor(text,
+                                                                                                          list_orgao_emissor=None)
 
-        # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
-        orgao_emissor = model_three_frente.__postprocess_string(orgao_emissor, settings.REGEX_ONLY_LETTERS)
-
-        return text, orgao_emissor
+        return text, orgao_emissor, sigla
 
 
 def main_model(dir_image):
@@ -211,18 +210,18 @@ def main_model(dir_image):
         print("-" * 50)
         print("MODELO TRÊS - FRENTE - RODADA: {} - {}".format(idx, image))
 
-        text, orgao_emissor = model_three_frente(dict_images[image]).orchestra_model()
+        text, orgao_emissor, sigla = model_three_frente(dict_images[image]).orchestra_model()
 
         # ARMAZENANDO O RESULTADO
         print("RESULTADO OBTIDO - RODADA: {} - {}".format(idx, image))
-        print(orgao_emissor)
+        print("ORGÃO EMISSOR: {} - SIGLA: {}".format(orgao_emissor, sigla))
 
-        result_model.append([text, orgao_emissor])
+        result_model.append([text, orgao_emissor, sigla])
 
     return result_model
 
 
-image = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Solange_Pereira_frente.png'
+image = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\GilmarAlmeida_frente.jpg'
 main_model(image)
 
 

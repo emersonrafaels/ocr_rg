@@ -614,8 +614,8 @@ class Image_Pre_Processing(object):
 
 
         # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
-        image_view_functions.view_image(image, window_name="ORIGINAL")
-        image_view_functions.view_image(image_cropped_contour, window_name="CROPPED")
-        image_view_functions.view_image(image_warped, window_name="WARPED")
+        #image_view_functions.view_image(image, window_name="ORIGINAL")
+        #image_view_functions.view_image(image_cropped_contour, window_name="CROPPED")
+        #image_view_functions.view_image(image_warped, window_name="WARPED")
 
         return image, image_cropped_contour, image_warped
