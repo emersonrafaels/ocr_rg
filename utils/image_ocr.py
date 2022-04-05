@@ -20,6 +20,7 @@ from inspect import stack
 
 import cv2
 from dynaconf import settings
+import pandas as pd
 import pytesseract
 
 from UTILS.generic_functions import converte_int
@@ -73,11 +74,11 @@ class ocr_functions():
         self.lista_tipos_retorno_ocr = ["TEXTO", "COMPLETO"]
 
         # 5 - TIPO DE RETORNO DO OCR SELECIONADA
-        self.tipo_retorno_ocr = tipo_retorno_ocr_input
+        self.tipo_retorno_ocr = str(tipo_retorno_ocr_input).upper()
         self.visualiza_ocr_completo = visualiza_ocr_completo
 
         # 6 - TIPO DE FORMATO DO OUTPUT QUANDO UTILIZADO OCR COMPLETO
-        self.OUTPUT_TYPE_IMAGE_DATA = tipo_output_type_image_data
+        self.OUTPUT_TYPE_IMAGE_DATA = str(tipo_output_type_image_data).upper()
 
 
     @staticmethod
@@ -347,7 +348,7 @@ class ocr_functions():
         # VERIFICANDO QUAL O TIPO DE DADO DO INPUT DE RESULTADO DO OCR
         if isinstance(input_result_ocr, pd.DataFrame):
             # O INPUT É UM DATAFRAME
-            result_ocr = " ".join(list(input_result_ocr[~input_result_ocr["text"].isna()]["text"]))
+            result_ocr = " ".join(list(input_result_ocr["text"].fillna(" ")))
         else:
             # O INPUT É UM DATAFRAME
             result_ocr = " ".join(input_result_ocr["text"])
