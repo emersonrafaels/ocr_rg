@@ -239,7 +239,7 @@ class Execute_Process_Names():
                     # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
                     if value_y != "" and not applied_filter_not_intesection_list(
                             [value_split for value_split in value_y.split(" ") if value_split != ""],
-                            filters_validate + settings.WORDS_BLACK_LIST_NAMES,
+                            filters_validate + settings.WORDS_BLACK_LIST_NAMES_FIND,
                             mode="FIND", min_len=3):
 
                         # print("NOME: TESTANDO: {}".format(value_y))
@@ -401,7 +401,8 @@ class Execute_Process_Names():
         result_names = []
 
         # REALIZANDO A LIMPEZA DO TEXTO, RETIRANDO BLACKLIST
-        text = remove_line_with_black_list_words(text, settings.WORDS_BLACK_LIST_NAMES)
+        text = remove_line_with_black_list_words(text, settings.WORDS_BLACK_LIST_NAMES_FIND)
+        text = remove_line_with_black_list_words(text, settings.WORDS_BLACK_LIST_NAMES_EQUAL)
 
         try:
 
@@ -421,7 +422,7 @@ class Execute_Process_Names():
                             # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
                             if value_y != "" and not applied_filter_not_intesection_list(
                                     [value_split for value_split in value_y.split(" ") if value_split != ""],
-                                    filters_validate + settings.WORDS_BLACK_LIST_NAMES,
+                                    filters_validate + settings.WORDS_BLACK_LIST_NAMES_FIND,
                                     mode="FIND", min_len=3):
 
                                 # print("NOME: TESTANDO: {}".format(value_y))

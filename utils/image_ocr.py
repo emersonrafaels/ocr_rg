@@ -36,17 +36,18 @@ class ocr_functions():
         CONVERSÃO IMAGEM PARA TEXTO.
 
         # Arguments
-            imagem_atual            - Required : Imagem para aplicação do OCR (String | Object)
-            lang_padrao             - Optional : Linguagem que será utilizada no OCR (String)
-            config_tesseract_psm    - Optional : Configuração do tesseract.
-                                                 É possível passar um valor
-                                                 específico de PSM. (String | Integer)
-            config_tesseract_oem    - Optional : Configuração do tesseract.
-                                                 É possível passar um valor
-                                                 específico de OEM. (String | Integer)
-            tipo_retorno_ocr_input  - Optional : Tipo de retorno do ocr desejado (String)
+            imagem_atual                          - Required : Imagem para aplicação do OCR (String | Object)
+            lang_padrao                           - Optional : Linguagem que será utilizada no OCR (String)
+            config_tesseract_psm                  - Optional : Configuração do tesseract.
+                                                               É possível passar um valor
+                                                               específico de PSM. (String | Integer)
+            config_tesseract_oem                  - Optional : Configuração do tesseract.
+                                                               É possível passar um valor
+                                                               específico de OEM. (String | Integer)
+            tipo_retorno_ocr_input                - Optional : Tipo de retorno do ocr desejado (String)
+            tipo_output_type_image_data
         # Returns
-            texto_ocr               - Required : Texto obtido após aplicação da técnica de OCR (String)
+            texto_ocr                             - Required : Texto obtido após aplicação da técnica de OCR (String)
 
     """
 
@@ -55,7 +56,8 @@ class ocr_functions():
                  config_tesseract_psm=settings.TESSERACT_PSM,
                  config_tesseract_oem=settings.TESSERACT_OEM,
                  tipo_retorno_ocr_input=settings.TIPO_OCR,
-                 visualiza_ocr_completo=settings.VISUALIZA_OCR_COMPLETO):
+                 visualiza_ocr_completo=settings.VISUALIZA_OCR_COMPLETO,
+                 tipo_output_type_image_data=settings.OUTPUT_TYPE_IMAGE_DATA):
 
 
         # 1 - LINGUAGEM PADRÃO DO OCR
@@ -73,6 +75,9 @@ class ocr_functions():
         # 5 - TIPO DE RETORNO DO OCR SELECIONADA
         self.tipo_retorno_ocr = tipo_retorno_ocr_input
         self.visualiza_ocr_completo = visualiza_ocr_completo
+
+        # 6 - TIPO DE FORMATO DO OUTPUT QUANDO UTILIZADO OCR COMPLETO
+        self.OUTPUT_TYPE_IMAGE_DATA = tipo_output_type_image_data
 
 
     @staticmethod
@@ -195,6 +200,41 @@ class ocr_functions():
         return valor_psm_oem_tesseract
 
 
+    @staticmethod
+    def obtem_tesseract_output_type_image_data(valor_config_output_type_image_data):
+
+        """
+
+            EXISTEM DUAS PRINCIPAIS FORMAS DE OUTPUT:
+                1) DATAFRAME
+                2) DICT
+
+        """
+
+        # INICIANDO O VALIDADOR
+        validador = False
+
+        # INICIANDO A VARIÁVEL DE OUTPUT DO IMAGE DATA
+        valor_output_type_image_data = pytesseract.Output.DATAFRAME
+
+
+        try:
+            # VERIFICANDO SE O VALOR DE PSM E OEM ENCONTRA-SE DENTRE AS CONFIGS
+            if valor_config_output_type_image_data == "DATAFRAME":
+                valor_output_type_image_data = pytesseract.Output.DATAFRAME
+            elif valor_config_output_type_image_data == "DICT":
+                valor_output_type_image_data = pytesseract.Output.DICT
+            else:
+                valor_output_type_image_data = pytesseract.Output.DATAFRAME
+
+                validador = True
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return valor_output_type_image_data
+
+
     def obtem_orientacao_imagem(self, caminho_imagem_atual = None):
 
         """
@@ -304,8 +344,13 @@ class ocr_functions():
         string_atual = ""
         list_result = []
 
-        # CONCATENANDO O RESULTADO DO OCR (CONTIDO NO CAMPO 'text' DO DICT)
-        result_ocr = " ".join(input_result_ocr["text"])
+        # VERIFICANDO QUAL O TIPO DE DADO DO INPUT DE RESULTADO DO OCR
+        if isinstance(input_result_ocr, pd.DataFrame):
+            # O INPUT É UM DATAFRAME
+            result_ocr = " ".join(list(input_result_ocr[~input_result_ocr["text"].isna()]["text"]))
+        else:
+            # O INPUT É UM DATAFRAME
+            result_ocr = " ".join(input_result_ocr["text"])
 
         # PERCORRENDO O TEXTO CONCATENADO E REALIZANDO AS QUEBRAS DE LINHA
         for value in str(result_ocr).strip().split(" "):
@@ -385,12 +430,15 @@ class ocr_functions():
         # INICIANDO A VARIÁVEL INFORMAÇÕES DE OCR
         infos_ocr = {}
 
+        # OBTENDO A CONFIG DE FORMATO DO OUTPUT
+        self.OUTPUT_TYPE_IMAGE_DATA = ocr_functions.obtem_tesseract_output_type_image_data(self.OUTPUT_TYPE_IMAGE_DATA)
+
         try:
             # REALIZANDO O OCR SOBRE A IMAGEM
             infos_ocr = pytesseract.image_to_data(imagem_rgb,
                                                   lang=self.lang_padrao,
                                                   config=self.config_tesseract_psm,
-                                                  output_type=pytesseract.Output.DICT)
+                                                  output_type=self.OUTPUT_TYPE_IMAGE_DATA)
 
             validador = True
 

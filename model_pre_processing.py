@@ -505,6 +505,9 @@ class Image_Pre_Processing(object):
         # INICIANDO O VALIDADOR DA FUNÇÃO
         validator = False
 
+        # INICIANDO A VARIÁVEL DE RETORNO
+        result_corners = None
+
         try:
             # OBTENDO OS CANTOS DA IMAGEM
             corners = cv2.goodFeaturesToTrack(mask, 4, 0.01, 10)
@@ -517,30 +520,38 @@ class Image_Pre_Processing(object):
 
             validator = True
 
-            return validator, result_corners
-
         except Exception as ex:
             print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 
-        return validator, None
+        return validator, result_corners
 
 
     def __find_new_corners(self, v, high_value=600):
 
-        idx = np.zeros(v.shape)
-        v_copy = v.copy()
-        x = v_copy[:,0]
-        x_sorted = np.sort(v_copy[:,0])
-        y = v_copy[:,1]
-        x_array = []
-        for element in x:
-            for i, sorted_element in enumerate(x_sorted):
-                if element == sorted_element:
-                    x_array.append(i)
-        #idx[:,0] = x_array
-        idx[:, 0] = x_array[:4]
-        idx[:,1] = y.argsort()
-        return np.float32((idx>1)*high_value)
+        # INICIANDO A VARIÁVEL DE RETORNO
+        new_corners = None
+
+        try:
+            idx = np.zeros(v.shape)
+            v_copy = v.copy()
+            x = v_copy[:,0]
+            x_sorted = np.sort(v_copy[:,0])
+            y = v_copy[:,1]
+            x_array = []
+            for element in x:
+                for i, sorted_element in enumerate(x_sorted):
+                    if element == sorted_element:
+                        x_array.append(i)
+            #idx[:,0] = x_array
+            idx[:, 0] = x_array[:4]
+            idx[:,1] = y.argsort()
+
+            new_corners = np.float32((idx>1)*high_value)
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        return new_corners
 
 
     def orchestra_pre_processing(self, image):

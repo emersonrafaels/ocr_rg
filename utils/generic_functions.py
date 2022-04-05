@@ -597,15 +597,20 @@ def order_list_with_arguments(list_values, number_column_order=1, limit=1):
     return return_list
 
 
-def remove_line_with_black_list_words(text, list_words=[]):
+def remove_line_with_black_list_words(text, list_words=[], mode="FIND"):
 
     """
 
         FUNÇÃO PARA REMOVER LINHAS QUE CONTÉM PALAVRAS NÃO DESEJADAS
 
+        HÁ DOIS MODOS DE BUSCA:
+            EQUAL - A PALAVRA ESTÁ EXATAMENTE IGUAL
+            FIND - A PALAVRA ESTÁ PARCIALMENTE IGUAL
+
         # Arguments
             text                  - Required : Texto a ser analisado (String)
             list_words            - Optional : Lista de palavras a serem buscadas (List)
+            mode                  - Optional : Modo de busca da palavra (String)
 
         # Returns
             return_text          - Required : Texto resultante após a análise (String)
@@ -624,10 +629,19 @@ def remove_line_with_black_list_words(text, list_words=[]):
         # PERCORRENDO TODAS AS PALAVRAS DA BLACK LIST
         for value in list_words:
 
-            if line.find(value)!=-1:
-                # A PALAVRA FOI ENCONTRADA
-                validador = True
-                break
+            if mode == "FIND":
+
+                if line.find(value)!=-1:
+                    # A PALAVRA FOI ENCONTRADA
+                    validador = True
+                    break
+
+            else:
+
+                if value in line.split(" "):
+                    # A PALAVRA FOI ENCONTRADA
+                    validador = True
+                    break
 
         if validador is False:
             # A PALAVRA NÃO FOI ENCONTRADA
