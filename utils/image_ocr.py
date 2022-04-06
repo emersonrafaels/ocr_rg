@@ -332,18 +332,24 @@ class ocr_functions():
             APÓS A REALIZAÇÃO DO OCR COMPLETO (POR BOUNDING BOX),
             ESSA FUNÇÃO CONCATENA O TEXTO, RESULTANDO EM UMA ÚNICA STRING.
 
+            CONVERTE O RESULTADO DO OCR COMPLETO (IMAGE DATA)
+            EM UM FORMATO LEGÍVEL:
+                1) TEXT: STRING CONTENDO O TEXTO DO OCR OBTIDO
+                2) INFOS_OCR: DATAFRAME CONTENDO AS INFORMAÇÕES DO OCR (IMAGE_DATA)
+
             # Arguments
-                input_result_ocr              - Required : Resultado do OCR (List)
+                input_result_ocr              - Required : Informações obtidas no OCR (DataFrame | Dict)
             # Returns
-                list_result                   - Required : Resultado do OCR (List)
-                text_result                   - Required : Resulado do OCR concatenado
-                                                           em uma única string (String)
+                list_result                   - Required : Texto resultante (List)
+                text_result                   - Required : Texto resultante (String)
+                infos_ocr                     - Required : Informações obtidas no OCR (DataFrame)
 
         """
 
         # INICIANDO AS VARIÁVEIS QUE ARMAZENARÃO O RESULTADO FINAL
         string_atual = ""
         list_result = []
+        infos_ocr = pd.DataFrame()
 
         # VERIFICANDO QUAL O TIPO DE DADO DO INPUT DE RESULTADO DO OCR
         if isinstance(input_result_ocr, pd.DataFrame):
@@ -352,6 +358,9 @@ class ocr_functions():
         else:
             # O INPUT É UM DATAFRAME
             result_ocr = " ".join(input_result_ocr["text"])
+
+            # CONVERTEMOS O INFO_OCR PARA DATAFRAME
+            infos_ocr = pd.DataFrame(input_result_ocr)
 
         # PERCORRENDO O TEXTO CONCATENADO E REALIZANDO AS QUEBRAS DE LINHA
         for value in str(result_ocr).strip().split(" "):
@@ -372,7 +381,8 @@ class ocr_functions():
         # RETORNANDO O RESULTADO DO OCR
         # LISTA CONTENDO CADA UM DOS TEXTOS
         # TEXTO CONTENDO O TEXTO COM QUEBRA DE LINHAS
-        return list_result, text_result
+        # DATAFRAME COMPLETO CONTENDO AS INFORMAÇÕES DO OCR
+        return list_result, text_result, infos_ocr
 
 
     def realizar_ocr_retorno_completo(self, imagem_rgb):

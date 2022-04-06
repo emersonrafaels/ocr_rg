@@ -138,7 +138,7 @@ class model_four():
         # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 3
         info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(self.dir_image)
 
-        _, text = ocr_functions.convert_resultado_ocr_completo(info_ocr)
+        _, text, info_ocr = ocr_functions.convert_resultado_ocr_completo(info_ocr)
 
         # INICIANDO AS VARIÁVEIS
         data_exp = ""
