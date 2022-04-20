@@ -483,7 +483,6 @@ def applied_filter_not_intesection_list(list_a, list_b,
     except Exception as ex:
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
-
     return return_intersection
 
 

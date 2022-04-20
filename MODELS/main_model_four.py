@@ -135,7 +135,7 @@ class model_four():
 
     def orchestra_model(self):
 
-        # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 3
+        # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 4
         info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(self.dir_image)
 
         _, text, info_ocr = ocr_functions.convert_resultado_ocr_completo(info_ocr)
@@ -157,33 +157,41 @@ class model_four():
         #print("-"*50)
 
         # OBTENDO AS DATAS
-        data_exp, data_nasc = Execute_Process_Data().get_result_datas(text, self.pattern_data)
+        data_exp, data_nasc = Execute_Process_Data().get_result_datas(text,
+                                                                      self.pattern_data,
+                                                                      info_ocr=info_ocr)
 
         # OBTENDO CPF
         list_result_cpf = Execute_Process_RG_CPF().get_values(text,
                                                               self.pattern_cpf,
-                                                              limit_values=1)
+                                                              limit_values=1,
+                                                              info_ocr=info_ocr)
 
         # OBTENDO RG (FILTRANDO VALORES QUE JÁ CONSTAM COMO CPF)
         list_result_rg = Execute_Process_RG_CPF().get_values(text,
                                                              self.pattern_rg,
-                                                             filters_validate=list_result_cpf,
-                                                             limit_values=1)
+                                                             filters_validate=list_result_cpf[0][0],
+                                                             limit_values=1,
+                                                             info_ocr=info_ocr)
 
         # OBTENDO AS CIDADES-ESTADO
         cidade_nasc, estado_nasc, cidade_origem, estado_origem = Execute_Process_Location().get_result_location(text,
                                                                                                                 self.pattern_uf)
 
         # RESULTADOS ATÉ ENTÃO
-        results_ocr = [data_exp, data_nasc, cidade_nasc, estado_nasc, cidade_origem, estado_origem] + list_result_cpf + list_result_rg
+        results_ocr = [data_exp[0], data_nasc[0],
+                       cidade_nasc, estado_nasc, cidade_origem, estado_origem,
+                       list_result_rg[0][0], list_result_cpf[0][0]]
 
         # OBTENDO OS NOMES
         nome, nome_pai, nome_mae = Execute_Process_Names().orchestra_get_names(text,
                                                                                results_ocr)
 
         # FORMATANDO O RESULTADO DOS CAMPOS NUMÉRICOS
-        list_result_rg = [model_four.__postprocess_num(value_rg, settings.REGEX_ONLY_X_NUMBERS) for value_rg in list_result_rg]
-        list_result_cpf = [model_four.__postprocess_num(value_cpf, settings.REGEX_ONLY_NUMBERS) for value_cpf in list_result_cpf]
+        list_result_rg = [model_four.__postprocess_num(list_result_rg[0][0], settings.REGEX_ONLY_X_NUMBERS),
+                          list_result_rg[0][1]]
+        list_result_cpf = [model_four.__postprocess_num(list_result_cpf[0][0], settings.REGEX_ONLY_NUMBERS),
+                           list_result_cpf[0][1]]
 
         # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
         nome = model_four.__postprocess_string(nome, settings.REGEX_ONLY_LETTERS)

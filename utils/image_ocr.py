@@ -355,6 +355,9 @@ class ocr_functions():
         if isinstance(input_result_ocr, pd.DataFrame):
             # O INPUT É UM DATAFRAME
             result_ocr = " ".join(list(input_result_ocr["text"].fillna(" ")))
+
+            # MANTEMOS O INFO_OCR COMO DATAFRAME
+            infos_ocr = input_result_ocr
         else:
             # O INPUT É UM DATAFRAME
             result_ocr = " ".join(input_result_ocr["text"])
