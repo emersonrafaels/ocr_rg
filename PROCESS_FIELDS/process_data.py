@@ -1,3 +1,31 @@
+"""
+
+    CLASSE PARA PROCESSAMENTO DOS CAMPOS DE FORMATO DATA.
+
+    OS CAMPOS SÃO:
+        1) DATA DE EXPEDIÇÃO
+        2) DATA DE NASCIMENTO
+
+    POSSUI FUNÇÕES PARA:
+        1) OBTER DATAS CONTIDAS NO TEXTO
+
+    # Arguments
+        text                   - Required : Texto a ser analisado (String)
+        pattern_data           - Required : Pattern a ser utilizado para
+                                            obtenção das datas (Regex)
+        info_ocr               - Optional : ImageData do OCR (DataFrame | Dict)
+
+    # Returns
+        data_exp               - Required : Data de expedição (String)
+        data_nasc              - Required : Data de nascimento (String)
+
+"""
+
+__version__ = "1.0"
+__author__ = "Emerson V. Rafael (EMERVIN)"
+__data_atualizacao__ = "26/04/2022"
+
+
 from inspect import stack
 
 from dynaconf import settings
