@@ -32,6 +32,10 @@ class Execute_Process_Names():
         # 5 - INICIANDO A VARIÁVEL QUE CONTÉM O LIMIT NA CHAMADA DE MÁXIMAS SIMILARIDADES
         self.limit_result_best_similar = settings.DEFAULT_LIMIT_RESULT_BEST_SIMILAR
 
+        # 6 - INICIANDO A VARIÁVEL QUE ARMAZENA
+        # SE O PERCENTUAL DE CONFIANÇA DEVE SER CALCULADO COM MÉDIA PONDERADA
+        self.confidence_weighted = settings.CONFIDENCE_WEIGHTED
+
 
     def __get_data_names(self, dir_data, value_split, encoding):
 
