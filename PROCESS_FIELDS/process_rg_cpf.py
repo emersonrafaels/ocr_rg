@@ -2,9 +2,10 @@ from inspect import stack
 
 from dynaconf import settings
 
+from CONFIG import config
 from UTILS.extract_infos import Extract_Infos
 from UTILS.generic_functions import applied_filter_not_intesection_list
-from PROCESS_FIELDS.process_confidence_percentage import get_confidence_percentage
+from PROCESS_FIELDS.process_confidence_percentage import get_confidence_percentage, get_average
 
 
 class Execute_Process_RG_CPF():
@@ -20,7 +21,8 @@ class Execute_Process_RG_CPF():
 
 
     def get_values(self, text, pattern, filters_validate=[],
-                   limit_values=None, info_ocr=None):
+                   limit_values=None, info_ocr=config.INFO_OCR_DEFAULT):
+
         """
 
             ORQUESTRA A OBTENÇÃO DE VALORES EM UM TEXTO, DE ACORDO COM UM PATTERN.
@@ -37,7 +39,6 @@ class Execute_Process_RG_CPF():
                 limit_values        - Optional : Limite de valores desejados (Integer)
                 info_ocr            - Optional : ImageData do OCR (DataFrame | Dict)
 
-
             # Returns
                 list_result         - Required : Resultados dos matchs (List)
 
@@ -46,6 +47,7 @@ class Execute_Process_RG_CPF():
         # INICIANDO AS VARIÁVEIS
         list_result = []
         list_result_percentage_confidence = [["", 0]]
+        list_result_percentage_confidence_default = [["", 0]]
 
         try:
             # OBTENDO OS REGISTROS GERAIS
@@ -61,10 +63,16 @@ class Execute_Process_RG_CPF():
                 if limit_values:
                     list_result = list_result[:limit_values]
 
-                # OBTENDO O PERCENTUAL DE CONFIANÇA DESSES VALORES
-                list_result_percentage_confidence = get_confidence_percentage(list_result, info_ocr)
+                if limit_values:
+                    # OBTENDO O PERCENTUAL DE CONFIANÇA DESSES VALORES
+                    list_result_percentage_confidence = [[value_result, get_average(get_confidence_percentage(value_result, info_ocr))]
+                                                         for value_result in list_result]
+
+                else:
+                    list_result_percentage_confidence = list_result_percentage_confidence_default
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            list_result_percentage_confidence = list_result_percentage_confidence_default
 
         return list_result_percentage_confidence

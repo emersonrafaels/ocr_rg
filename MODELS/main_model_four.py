@@ -170,42 +170,57 @@ class model_four():
         # OBTENDO RG (FILTRANDO VALORES QUE JÁ CONSTAM COMO CPF)
         list_result_rg = Execute_Process_RG_CPF().get_values(text,
                                                              self.pattern_rg,
-                                                             filters_validate=list_result_cpf[0][0],
+                                                             filters_validate=[list_result_cpf[0][0]],
                                                              limit_values=1,
                                                              info_ocr=info_ocr)
 
-        # OBTENDO AS CIDADES-ESTADO
+        # OBTENDO AS CIDADES-ESTADOS
         cidade_nasc, estado_nasc, cidade_origem, estado_origem = Execute_Process_Location().get_result_location(text,
-                                                                                                                self.pattern_uf)
+                                                                                                                self.pattern_uf,
+                                                                                                                info_ocr=info_ocr)
 
         # RESULTADOS ATÉ ENTÃO
         results_ocr = [data_exp[0], data_nasc[0],
-                       cidade_nasc, estado_nasc, cidade_origem, estado_origem,
-                       list_result_rg[0][0], list_result_cpf[0][0]]
+                       cidade_nasc[0], estado_nasc[0],
+                       cidade_origem[0], estado_origem[0],
+                       list_result_rg[0][0],
+                       list_result_cpf[0][0]]
 
         # OBTENDO OS NOMES
         nome, nome_pai, nome_mae = Execute_Process_Names().orchestra_get_names(text,
-                                                                               results_ocr)
+                                                                               filters_validate=results_ocr,
+                                                                               info_ocr=info_ocr,
+                                                                               pattern=settings.REGEX_ONLY_LETTERS)
 
         # FORMATANDO O RESULTADO DOS CAMPOS NUMÉRICOS
         list_result_rg = [model_four.__postprocess_num(list_result_rg[0][0], settings.REGEX_ONLY_X_NUMBERS),
-                          list_result_rg[0][1]]
+                          round(list_result_rg[0][1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
         list_result_cpf = [model_four.__postprocess_num(list_result_cpf[0][0], settings.REGEX_ONLY_NUMBERS),
-                           list_result_cpf[0][1]]
+                           round(list_result_cpf[0][1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+
+        # FORMATANDO O RESULTADO DOS CAMPOS DATAS
+        data_exp = [data_exp[0], round(data_exp[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        data_nasc = [data_nasc[0], round(data_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
 
         # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
-        nome = model_four.__postprocess_string(nome, settings.REGEX_ONLY_LETTERS)
-        nome_pai = model_four.__postprocess_string(nome_pai, settings.REGEX_ONLY_LETTERS)
-        nome_mae = model_four.__postprocess_string(nome_mae, settings.REGEX_ONLY_LETTERS)
-        cidade_nasc = model_four.__postprocess_string(cidade_nasc, settings.REGEX_ONLY_LETTERS_DOT_DASH)
-        estado_nasc = model_four.__postprocess_string(estado_nasc, settings.REGEX_ONLY_LETTERS)
-        cidade_origem = model_four.__postprocess_string(cidade_origem, settings.REGEX_ONLY_LETTERS_DOT_DASH)
-        estado_origem = model_four.__postprocess_string(estado_origem, settings.REGEX_ONLY_LETTERS)
+        nome = [model_four.__postprocess_string(nome[0], settings.REGEX_ONLY_LETTERS),
+                round(nome[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        nome_pai = [model_four.__postprocess_string(nome_pai[0], settings.REGEX_ONLY_LETTERS),
+                    round(nome_pai[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        nome_mae = [model_four.__postprocess_string(nome_mae[0], settings.REGEX_ONLY_LETTERS),
+                    round(nome_mae[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        cidade_nasc = [model_four.__postprocess_string(cidade_nasc[0], settings.REGEX_ONLY_LETTERS),
+                       round(cidade_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        estado_nasc = [model_four.__postprocess_string(estado_nasc[0], settings.REGEX_ONLY_LETTERS),
+                       round(estado_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        cidade_origem = [model_four.__postprocess_string(cidade_origem[0], settings.REGEX_ONLY_LETTERS),
+                         round(cidade_origem[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        estado_origem = [model_four.__postprocess_string(estado_origem[0], settings.REGEX_ONLY_LETTERS),
+                         round(estado_origem[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
 
         return text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
                nome, nome_pai, nome_mae, \
                cidade_nasc, estado_nasc, cidade_origem, estado_origem
-
 
 
 def main_model(dir_image):

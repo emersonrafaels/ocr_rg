@@ -7,6 +7,7 @@ from CONFIG import config
 from UTILS.extract_infos import Extract_Infos
 from UTILS.generic_functions import read_txt, applied_filter_not_intesection_list, order_list_with_arguments
 from UTILS.generic_functions import verify_find_intersection, remove_line_with_black_list_words
+from PROCESS_FIELDS.process_confidence_percentage import get_confidence_percentage, get_average
 
 
 class Execute_Process_Names():
@@ -35,6 +36,92 @@ class Execute_Process_Names():
         # 6 - INICIANDO A VARIÁVEL QUE ARMAZENA
         # SE O PERCENTUAL DE CONFIANÇA DEVE SER CALCULADO COM MÉDIA PONDERADA
         self.confidence_weighted = settings.CONFIDENCE_WEIGHTED
+
+
+    def create_text(self, x, y, z):
+
+        x = x.split("\n")
+        y = y.split("\n")
+        z = z.split("\n")
+
+        list_names = list(dict.fromkeys(x + y + z))
+
+        text = "\n".join(list_names)
+
+        return text
+
+
+    def concatenate_names(self, info):
+
+        text = Execute_Process_Names.create_text(self,
+                                                 info["NOME"],
+                                                 info["NOME_PAI"],
+                                                 self["NOME_MAE"])
+
+        # OBTENDO NOME, NOME DO PAI E NOME DA MÃE
+        # UTILIZANDO O PROCESSO DE OBTENÇÃO DE NOME ATRAVÉS
+        # DA ORQUESTRAÇÃO DE REGRAS PARA OBTENÇÃO DE NOMES
+        nome, nome_pai, nome_mae = Execute_Process_Names.get_names(self, text=text)
+
+        info["NOME"], info["NOME_PAI"], info["NOME_MAE"]= nome, nome_pai, nome_mae
+
+
+    def get_confidence_names(self, name,
+                             info_ocr=config.INFO_OCR_DEFAULT,
+                             pattern=settings.REGEX_ONLY_LETTERS):
+
+        """
+
+            RETORNA O PERCENTUAL DE CONFIANÇA DA LEITURA DO NOME.
+
+            A FUNÇÃO É UTILIZADA PARA CADA UM DOS NOMES OBTIDOS:
+                1) NOME
+                2) NOME_PAI
+                3) NOME_MAE
+
+            # Arguments
+                name                 - Required : Nome para obter o percentual de confiança (String)
+                info_ocr             - Required : Informações da leitura do OCR (DataFrame)
+                pattern              - Required : Padrão de leitura regeX e pós processamentos (String)
+
+            # Returns
+                output               - Required : Lista contendo o nome e o
+                                                  percentual de confiança da leitura (List)
+
+        """
+
+        # INICIANDO AS VARIÁVEIS AUXILIARES
+        name_index = 0
+        name_percentage_default = [name, 0]
+
+        # CRIA UMA CÓPIA DO DATAFRAME DE INFORMAÇÕES DE LEITURA DO OCR
+        info_ocr_copy = info_ocr.copy()
+
+        # APLICA O PÓS PROCESSAMENTO NA COLUNA DO TEXTO
+        info_ocr_copy["text"] = [re.sub(pattern=pattern,
+                                        string=value_z,
+                                        repl=" ").replace("  ", " ").strip() for value_z in info_ocr.text.fillna('')]
+        
+        # VERIFICA SE O NOME NÃO É VÁZIO
+        if len(name.split()) > 0:
+
+            try:
+                # BUSCA O ÍNDICE DO PRIMEIRO NOME NO DATAFRAME
+                name_index = info_ocr_copy.text.to_list().index(name.split()[0])
+
+            except Exception as ex:
+                print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+
+            # CRIA UMA LISTA CONTENDO CADA UM DOS NOMES COM SEU PERCENTUAL DE CONFIANÇA
+            confidence = get_confidence_percentage(name.split(),
+                                                   info_ocr_copy.iloc[name_index:,])
+
+            # RETORNA UMA LISTA COM O NOME E O PERCENTUAL MÉDIO DE CONFIANÇA
+            return [name, get_average(confidence,
+                                      weighted=self.confidence_weighted)]
+
+        else:
+            return name_percentage_default
 
 
     def __get_data_names(self, dir_data, value_split, encoding):
@@ -170,7 +257,8 @@ class Execute_Process_Names():
         for value_x in complete_name_input.split(" "):
 
             # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
-            if value_x != first_name_input and value_x not in ["DO", "DA", "DE", "DI"]:
+            if value_x != first_name_input and value_x not in ["DO", "DA", "DE",
+                                                               "DI", "DOS", "DAS"]:
 
                 # VALIDANDO SE É O PRIMEIRO NOME (ESSE NÃO SERÁ ANALISADO)
                 if value_x != "" and len(value_x) >= 3:
@@ -238,6 +326,7 @@ class Execute_Process_Names():
 
             if not validador:
 
+                # PERCORRENDO CADA PALAVRA CONTIDA NO TEXTO (SEPARANDO POR ESPAÇO)
                 for value_y in result_split.split(" "):
 
                     # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
@@ -260,7 +349,6 @@ class Execute_Process_Names():
                                 validador = True
                                 break
 
-
             else:
                 break
 
@@ -268,20 +356,24 @@ class Execute_Process_Names():
 
                 # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
                 result_order_names = order_list_with_arguments(list_values=result_names,
-                                                         number_column_order=1,
-                                                         limit=1)
+                                                               number_column_order=1,
+                                                               limit=1)
 
                 if len(result_order_names):
-
                     info_extracted[field] = value_x[value_x.find(result_order_names[0][0]):]
 
                 else:
                     info_extracted[field] = ""
 
+        # CONCATENANDO NOMES
+        info_extracted = Execute_Process_Names.concatenate_names(self, info_extracted)
+
         return info_extracted
 
 
-    def find_nome_filiacao(self, text, pattern_find, limit=1):
+    def find_nome_filiacao(self, text, pattern_find,
+                           pattern_only_letters=settings.REGEX_ONLY_LETTERS,
+                           limit=1):
 
         """
 
@@ -293,9 +385,9 @@ class Execute_Process_Names():
                 text                 - Required : Texto a ser analisado (String)
                 filters_validate     - Optional : Filtros e validações
                                                   a serem aplicadas (List)
+                pattern_only_letters - Optional : Pattern a ser utilizado (Regex)
                 limit                - Optional : Número de linhas
                                                   seguintes desejadas (Integer)
-
 
             # Returns
                 result               - Required : Nomes obtidos (List)
@@ -357,7 +449,12 @@ class Execute_Process_Names():
                                                          limit=1)
 
                 # ATUALIZANDO O NOME FINAL
-                result = value[value.find(result_names[0][0]):].split("\n")[0]
+                result_names_slicing = value[value.find(result_names[0][0]):].split("\n")[0]
+
+                # MANTENDO APENAS LETRAS
+                result = re.sub(pattern=pattern_only_letters,
+                                string=result_names_slicing,
+                                repl=" ").replace("  ", " ").strip()
 
                 result_final.append(result)
 
@@ -368,7 +465,7 @@ class Execute_Process_Names():
 
 
     def get_names(self, text, filters_validate=[],
-                  pattern_only_letters=settings.REGEX_ONLY_LETTERS):
+                  pattern=settings.REGEX_ONLY_LETTERS):
 
         """
 
@@ -386,7 +483,7 @@ class Execute_Process_Names():
                 text                 - Required : Texto a ser analisado (String)
                 filters_validate     - Optional : Filtros e validações
                                                   a serem aplicadas (List)
-                regex_only_letters   - Optional : Pattern a ser utilizado (Regex)
+                pattern              - Optional : Pattern a ser utilizado (Regex)
 
 
             # Returns
@@ -414,37 +511,38 @@ class Execute_Process_Names():
 
                 if not validador:
 
-                    # MANTENDO APENAS LETRAS
-                    result_split = re.sub(pattern=pattern_only_letters,
-                                          string=value_x,
-                                          repl=" ").replace("  ", " ").strip()
+                    for value_y in value_x.split(" "):
 
-                    if len(result_split.split(" ")) > 1:
+                        # MANTENDO APENAS LETRAS
+                        result_regex = re.sub(pattern=pattern,
+                                              string=value_y,
+                                              repl=" ").replace("  ", " ").strip()
 
-                        for value_y in result_split.split(" "):
+                        # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
+                        if result_regex != "" and not applied_filter_not_intesection_list(
+                                [value_split for value_split in result_regex.split(" ") if value_split != ""],
+                                filters_validate + settings.WORDS_BLACK_LIST_NAMES_FIND,
+                                mode="FIND", min_len=3):
 
-                            # A STRING DEVE SER != "" E NÃO SER RESULTADO DE UM CAMPO ANTERIOR
-                            if value_y != "" and not applied_filter_not_intesection_list(
-                                    [value_split for value_split in value_y.split(" ") if value_split != ""],
-                                    filters_validate + settings.WORDS_BLACK_LIST_NAMES_FIND,
-                                    mode="FIND", min_len=3):
+                            # print("NOME: TESTANDO: {}".format(value_y))
 
-                                # print("NOME: TESTANDO: {}".format(value_y))
+                            # VALIDANDO SE É UM NOME VÁLIDO
+                            result_valid_name = Execute_Process_Names.get_first_name_valid(self,
+                                                                                           result_regex)
 
-                                # VALIDANDO SE É UM NOME VÁLIDO
-                                result_valid_name = Execute_Process_Names.get_first_name_valid(self,
-                                                                                               value_y)
+                            if result_valid_name[0][0]:
+                                # NOME ORIGINAL, PERCENTUAL DE MATCH, SEXO
+                                result_names.append([result_regex,
+                                                     result_valid_name[0][1][0][-1],
+                                                     result_valid_name[2]])
 
-                                if result_valid_name[0][0]:
-                                    result_names.append([value_y, result_valid_name[0][1][0][-1], result_valid_name[2]])
+                                if result_valid_name[0][-1][0][-1] == 100:
+                                    break
 
-                                    if result_valid_name[0][-1][0][-1] == 100:
-                                        break
-
-                                    # VERIFICANDO SE JÁ HÁ 3 VALORES COM 100% DE SIMILARIDADE
-                                    if len(list(filter(lambda x: x == 100, [value[1] for value in result_names]))) >= 3:
-                                        validador = True
-                                        break
+                                # VERIFICANDO SE JÁ HÁ 3 VALORES COM 100% DE SIMILARIDADE
+                                if len(list(filter(lambda x: x == 100, [value[1] for value in result_names]))) >= 3:
+                                    validador = True
+                                    break
 
                 else:
                     break
@@ -475,39 +573,129 @@ class Execute_Process_Names():
 
                 nome = text[text.find(result_names[0][0]):].split("\n")[0]
 
+                text_ = " ".join([value for value in text.split("\n") if value !=
+                                  [value_text for value_text in text.split("\n") if value_text.find(nome)!=-1][0]])
+
                 # VERIFICANDO O GÊNERO
                 if result_names[1][-1] == "M":
 
                     nome_pai = \
-                        text[text.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                        text_[text_.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
                     nome_mae = ""
 
                 else:
 
                     nome_pai = ""
-                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+                    nome_mae = text_[text.find(result_names[1][0]):].split("\n")[0]
 
             elif len(result_names) > 2:
 
                 nome = text[text.find(result_names[0][0]):].split("\n")[0]
 
+                text_ = "\n".join([value for value in text.split("\n") if value !=
+                                  [value_text for value_text in text.split("\n") if value_text.find(nome) != -1][0]])
+
                 # VERIFICANDO O GÊNERO
                 if result_names[1][-1] == "M":
 
                     nome_pai = \
-                        text[text.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
-                    nome_mae = text[text.find(result_names[2][0]):].split("\n")[0]
+                        text_[text_.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_[text_.find(result_names[2][0]):].split("\n")[0]
 
                 else:
 
                     nome_pai = \
-                        text[text.find(result_names[2][0]):].split("\n")[0].split(" E ")[0]
-                    nome_mae = text[text.find(result_names[1][0]):].split("\n")[0]
+                        text_[text_.find(result_names[2][0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_[text_.find(result_names[1][0]):].split("\n")[0]
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
-        return nome, nome_pai, nome_mae
+        # VALIDANDO SOBRENOMES
+        dict_names = {}
+        dict_names["NOME"] = nome
+        dict_names["NOME_PAI"] = nome_pai
+        dict_names["NOME_MAE"] = nome_mae
+
+        for value_name in dict_names:
+
+            # NOME - VALIDANDO O SOBRENOME - VERIFICANDO SE HÁ UM SOBRENOME UNITÁRIO
+            dict_names[value_name] = Execute_Process_Names.find_last_name_text_unit(self,
+                                                                                    nome=dict_names[value_name],
+                                                                                    text=text,
+                                                                                    list_last_names=None)
+
+            if len(dict_names[value_name].split()) >= 1:
+
+                # NOME - VALIDANDO O SOBRENOME - ANALISANDO SE OS SOBRENOMES SÃO VÁLIDOS
+                dict_names[value_name] = Execute_Process_Names.last_name_valid(self,
+                                                                               complete_name_input=dict_names[value_name],
+                                                                               first_name_input=dict_names[value_name].split()[0],
+                                                                               list_last_names=None)
+
+        return dict_names["NOME"], dict_names["NOME_PAI"], dict_names["NOME_MAE"]
+
+
+    def find_last_name_text_unit(self, nome, text, list_last_names=[],
+                                 pattern_only_letters=settings.REGEX_ONLY_LETTERS):
+
+        """
+
+            VERIFICA SE O TEXTO SEGUINTE AO NOME REGISTRADO
+            PODE SER UMA CONTINUAÇÃO DO SOBRENOME
+
+            # Arguments
+                nome                  - Required : Nome a ser analisado (String)
+                text                  - Required : Texto completo obtido no OCR (String)
+                list_last_names       - Optional : Lista com valores de sobrenome (List)
+                pattern_only_letters  - Optional : Pattern a ser utilizado (Regex)
+
+            # Returns
+                nome                  - Required : Nome final (String)
+
+        """
+
+        # VERIFICANDO A VARIÁVEL DE PRIMEIROS NOMES
+        if list_last_names is None:
+            list_last_names = self.data_last_names
+
+        # MANTENDO APENAS LETRAS NO TEXTO DO OCR
+        text_wo_spaces = [re.sub(pattern=pattern_only_letters,
+                                 string=text_split,
+                                 repl=" ").replace("  ", " ").strip() for text_split in text.split("\n") if text_split != ""]
+
+        # MANTENDO APENAS LETRAS NO NOME OBTIDO
+        nome = re.sub(pattern=pattern_only_letters,
+                      string=nome,
+                      repl=" ").replace("  ", " ").strip()
+
+        # OBTENDO O INDICE EM QUE O NOME APARECE
+        try:
+            if nome in text_wo_spaces:
+                ind = text_wo_spaces.index(nome)
+            else:
+                return nome
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
+            return nome
+
+        if (ind + 1) < len(text_wo_spaces):
+            ind += 1 # NOME CONSEGUINTE SERÁ O DE INTERESSE
+            surname_candidate = text_wo_spaces[ind]
+
+            # VERIFICANDO SE O NOME CANDIDATO É COMPOSTO APENAS POR UMA PALAVRA
+            if len(surname_candidate.split()) == 1:
+                result_similarity = Extract_Infos.get_similitary(self,
+                                                                 surname_candidate,
+                                                                 [value[0] for value in list_last_names],
+                                                                 self.default_percent_match,
+                                                                 self.similarity_pre_processing,
+                                                                 self.limit_result_best_similar)
+
+                if result_similarity[0]:
+                    nome = nome + " " + surname_candidate
+
+        return nome
 
 
     @staticmethod
@@ -568,10 +756,12 @@ class Execute_Process_Names():
                 # NOME DO PAI - ALTERNATIVA 1
                 # NOME DA MÃE - ALTERNATIVA 1
                 nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_um[1]
+
             if len(result_filiacao_alternativa_um) == 1:
                 # NOME DO PAI - ALTERNATIVA 1
                 # NOME DA MÃE - ALTERNATIVA 2
                 nome_pai, nome_mae = result_filiacao_alternativa_um[0], result_filiacao_alternativa_dois[1]
+
             else:
                 # NOME DO PAI - ALTERNATIVA 2
                 # NOME DA MÃE - ALTERNATIVA 2
@@ -583,11 +773,11 @@ class Execute_Process_Names():
         return nome, nome_pai, nome_mae
 
 
-    def orchestra_get_names(self, text, filters_validate=[]):
+    def orchestra_get_names(self, text, filters_validate=[], info_ocr=None, pattern=None):
 
         """
 
-           OSQUESTRA A OBTENÇÃO DOS CAMPOS DE NOMES:
+           ORQUESTRA A OBTENÇÃO DOS CAMPOS DE NOMES:
 
            PARA ISSO UTILIZA DUAS ALTERNATIVAS DIFERENTES:
 
@@ -613,13 +803,18 @@ class Execute_Process_Names():
 
         """
 
+        # INICIANDO A LISTA AUXILIAR PARA ARMAZENAR OS VALORES E OS PERCENTUAIS DE CONFIANÇA
+        list_names_percent_confidence = []
+
         # VERIFICANDO SE É POSSÍVEL ENCONTRAR AS PALAVRAS NOMES E FILIAÇÃO - ALTERNATIVA 1
         nome_alternativa_um = Execute_Process_Names.find_nome_filiacao(self, text,
                                                                        pattern_find=settings.WORDS_LIST_NAMES,
+                                                                       pattern_only_letters=settings.REGEX_ONLY_LETTERS,
                                                                        limit=1)
 
         filiacao_alternativa_um = Execute_Process_Names.find_nome_filiacao(self, text,
                                                                            pattern_find=settings.WORDS_LIST_FILIACAO,
+                                                                           pattern_only_letters=settings.REGEX_ONLY_LETTERS,
                                                                            limit=1)
 
         # OBTENDO OS NOMES - ALTERNATIVA 2
@@ -634,5 +829,14 @@ class Execute_Process_Names():
                                                                             filiacao_alternativa_um,
                                                                             [nome_alternativa_dois],
                                                                             [nome_pai_alternativa_dois, nome_mae_alternativa_dois])
+
+        # OBENDO OS PERCENTUAIS DE CONFIANÇA
+        for name in [nome, nome_pai, nome_mae]:
+            list_names_percent_confidence.append(Execute_Process_Names.get_confidence_names(self,
+                                                                                            name,
+                                                                                            info_ocr,
+                                                                                            pattern))
+
+        nome, nome_pai, nome_mae = list_names_percent_confidence
 
         return nome, nome_pai, nome_mae
