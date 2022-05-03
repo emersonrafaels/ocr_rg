@@ -23,6 +23,7 @@ import time
 
 from numpy import array
 import pandas as pd
+from PIL import Image
 
 
 def verify_exists(dir):
@@ -648,3 +649,36 @@ def remove_line_with_black_list_words(text, list_words=[], mode="FIND"):
 
     # RETORNANDO O TEXTO FINAL
     return return_text
+
+
+def save_image(image, dir_save="RESULT_SAVE_IMAGE", name_save="IMAGE.png"):
+
+    """
+
+        FUNÇÃO PARA SALVAR UMA IMAGEM,
+        PODE-SE FORNECER DIRETÓRIO E NOME DE SAVE DA IMAGEM
+
+        # Arguments
+            image                 - Required : Imagem a ser sakva (Array)
+            dir_save              - Optional : Diretório de save da imagem (String)
+            name_save             - Optional : Mome de save da imagem (String)
+
+        # Returns
+
+    """
+
+    try:
+        # VERIFICANDO SE O DIRETÓRIO EXISTE
+        if not verify_exists(dir=dir_save):
+            create_path(dir=dir_save)
+
+        # DEFININDO DIRETÓRIO E LOCAL DE SAVE
+        path_save_image = path.join(dir_save, name_save)
+
+        # REALIZANDO A LEITURA DA IMAGEM UTILIZANDO PIL
+        im = Image.fromarray(image)
+
+        # REALIZANDO O SAVE DA IMAGEM
+        im.save(path_save_image)
+    except Exception as ex:
+        print(ex)
