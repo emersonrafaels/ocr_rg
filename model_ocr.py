@@ -359,7 +359,7 @@ class Execute_OCR_RG(object):
         return output
 
 
-    def execute_ocr(self, img):
+    def orchestra_execute_ocr_model_two(self, img):
 
         """
 
@@ -398,13 +398,20 @@ class Execute_OCR_RG(object):
                   bounding_positions['x1']:bounding_positions['x2']]
 
             # REALIZANDO O OCR
-            info_extracted[field[0]] = ocr_functions().Orquestra_OCR(roi)
+            info_extracted[field[0]] = ocr_functions(tipo_retorno_ocr_input="TEXTO").Orquestra_OCR(roi)
+
+            # OBTENDO O INFO_OCR
+            # APLICANDO O OCR NO CROP - MODELO 2
+            info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO",
+                                     tipo_output_type_image_data="DATAFRAME").Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
             image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
             image_view_functions.view_image_with_coordinates(roi, window_name=field)
+
+
 
         return info_extracted
 
@@ -517,6 +524,10 @@ class Execute_OCR_RG(object):
                        "ESTADO_ORIGEM", "CIDADE_NASC", "ESTADO_NASC"]:
             info_extracted[column] = self.__postprocess_string(info_extracted[column])
 
+        # APLICANDO O PÓS PROCESSAMENTO EM TODOS OS CAMPOS
+        for column in info_extracted.keys():
+            info_extracted[column] = info_extracted[column].replace("\n", "").strip()
+
         # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted
 
@@ -537,7 +548,7 @@ class Execute_OCR_RG(object):
                                   interpolation=cv2.INTER_AREA)
 
         # APLICANDO O OCR - CAMPO A CAMPO
-        info_field = self.execute_ocr(image_resize)
+        info_field = self.orchestra_execute_ocr_model_two(image_resize)
 
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
         info_field = self.orchestra_pos_processing(info_field)
