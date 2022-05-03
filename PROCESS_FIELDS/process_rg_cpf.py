@@ -65,7 +65,8 @@ class Execute_Process_RG_CPF():
 
                 if limit_values:
                     # OBTENDO O PERCENTUAL DE CONFIANÇA DESSES VALORES
-                    list_result_percentage_confidence = [[value_result, get_average(get_confidence_percentage(value_result, info_ocr))]
+                    list_result_percentage_confidence = [[value_result, get_average(get_confidence_percentage(value_result,
+                                                                                                              info_ocr))]
                                                          for value_result in list_result]
 
                 else:

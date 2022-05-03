@@ -137,6 +137,7 @@ def main_model(dir_image):
         # REALIZANDO O OCR
         info_doc = Execute_OCR_RG().execute_pipeline_ocr(dict_images[image])
 
+
         # ARMAZENANDO O RESULTADO
         print("RESULTADO OBTIDO - RODADA: {} - {}".format(idx, image))
 
