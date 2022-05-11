@@ -6,14 +6,14 @@ from MODELS.main_model_three import main_model
 from UTILS.generic_functions import create_path, get_files_directory
 
 
-def get_processed_files(dir_db_results):
+def get_processed_files(dir_db_results, dt_images):
 
     list_result = []
 
     try:
         caminho_bd_bds = dir_db_results
-        ssql_bds = "SELECT ID_IMAGEM FROM TBL_PIXEL_TESTS WHERE TIPO_MODELO LIKE '%MODELO TRES%'"
-        params_bds = (None,)
+        ssql_bds = "SELECT ID_IMAGEM FROM TBL_PIXEL_TESTS WHERE TIPO_MODELO LIKE '%MODELO QUATRO%' AND DT_HR_INICIO LIKE ?"
+        params_bds = (dt_images,)
         tipo_query_bds = "SELECT"
 
         result_query = conectores().execute_query_sqlite(caminho_bd_bds, ssql_bds, params_bds, tipo_query_bds)
@@ -45,36 +45,38 @@ def insert_processed_image(dir_db_results, image, input_result,
 
         caminho_bd_bds = dir_db_results
         ssql_bds = """INSERT INTO TBL_PIXEL_TESTS (
-                                    ID_IMAGEM,
-                                    TEXTO_OCR,
-                                    RG,
-                                    DATA_EXPED,
-                                    NOME,
-                                    NOME_PAI,
-                                    NOME_MAE,
-                                    DATA_NASC, 
-                                    CPF,
-                                    CIDADE_NASC,
-                                    ESTADO_NASC,
-                                    CIDADE_ORIGEM,
-                                    ESTADO_ORIGEM,
-                                    TIPO_MODELO, 
-                                    DT_HR_INICIO,
-                                    DT_HR_FIM
-                                )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+                                            ID_IMAGEM,
+                                            TEXTO_OCR,
+                                            RG, RG_PERCENT,
+                                            DATA_EXPED, DATA_EXPED_PERCENT,
+                                            NOME, NOME_PERCENT,
+                                            NOME_PAI, NOME_PAI_PERCENT,
+                                            NOME_MAE, NOME_MAE_PERCENT,
+                                            DATA_NASC, DATA_NASC_PERCENT,
+                                            CPF, CPF_PERCENT,
+                                            CIDADE_NASC, CIDADE_NASC_PERCENT,
+                                            ESTADO_NASC, ESTADO_NASC_PERCENT,
+                                            CIDADE_ORIGEM, CIDADE_ORIGEM_PERCENT,
+                                            ESTADO_ORIGEM, ESTADO_ORIGEM_PERCENT,
+                                            TIPO_MODELO, 
+                                            DT_HR_INICIO,
+                                            DT_HR_FIM
+                                        )
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
         params_bds = (str(name_short), result[0],
-                      ",".join(result[-1]["RG"]), result[-1]["DATA_EXPED"],
-                      result[-1]["NOME"],
-                      result[-1]["NOME_PAI"],
-                      result[-1]["NOME_MAE"],
-                      result[-1]["DATA_NASC"],
-                      ",".join(result[-1]["CPF"]),
-                      result[-1]["CIDADE_NASC"],
-                      result[-1]["ESTADO_NASC"],
-                      result[-1]["CIDADE_ORIGEM"],
-                      result[-1]["ESTADO_ORIGEM"],
-                      "MODELO TRES - RODADA {}".format(idx),
+                      result[-1]["RG"][0], result[-1]["RG"][1],
+                      result[-1]["DATA_EXPED"][0], result[-1]["DATA_EXPED"][1],
+                      result[-1]["NOME"][0], result[-1]["NOME"][1],
+                      result[-1]["NOME_PAI"][0], result[-1]["NOME_PAI"][1],
+                      result[-1]["NOME_MAE"][0], result[-1]["NOME_MAE"][1],
+                      result[-1]["DATA_NASC"][0], result[-1]["DATA_NASC"][1],
+                      result[-1]["CPF"][0], result[-1]["CPF"][1],
+                      result[-1]["CIDADE_NASC"][0], result[-1]["CIDADE_NASC"][1],
+                      result[-1]["ESTADO_NASC"][0], result[-1]["ESTADO_NASC"][1],
+                      result[-1]["CIDADE_ORIGEM"][0], result[-1]["CIDADE_ORIGEM"][1],
+                      result[-1]["ESTADO_ORIGEM"][0], result[-1]["ESTADO_ORIGEM"][1],
+                      "MODELO QUATRO - RODADA {}".format(idx),
                       dt_hr_inicio, dt_hr_fim)
         tipo_query_bds = "INSERT"
 
@@ -97,7 +99,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
         contador = 1
 
         # OBTENDO AS IMAGENS JÁ PROCESSADAS
-        imagens_anterior_processadas = get_processed_files(dir_db_results)
+        imagens_anterior_processadas = get_processed_files(dir_db_results, "%27/04/2022%")
 
         # PERCORRENDO TODAS AS IMAGENS PARA OCR
         for image in lista_imagens:

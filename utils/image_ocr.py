@@ -56,9 +56,9 @@ class ocr_functions():
                  lang_padrao=settings.TESSERACT_LANG,
                  config_tesseract_psm=settings.TESSERACT_PSM,
                  config_tesseract_oem=settings.TESSERACT_OEM,
-                 tipo_retorno_ocr_input=settings.TIPO_OCR,
+                 type_return_ocr_input=settings.TIPO_OCR,
                  visualiza_ocr_completo=settings.VISUALIZA_OCR_COMPLETO,
-                 tipo_output_type_image_data=settings.OUTPUT_TYPE_IMAGE_DATA):
+                 type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA):
 
 
         # 1 - LINGUAGEM PADRÃO DO OCR
@@ -74,11 +74,11 @@ class ocr_functions():
         self.lista_tipos_retorno_ocr = ["TEXTO", "COMPLETO"]
 
         # 5 - TIPO DE RETORNO DO OCR SELECIONADA
-        self.tipo_retorno_ocr = str(tipo_retorno_ocr_input).upper()
+        self.tipo_retorno_ocr = str(type_return_ocr_input).upper()
         self.visualiza_ocr_completo = visualiza_ocr_completo
 
         # 6 - TIPO DE FORMATO DO OUTPUT QUANDO UTILIZADO OCR COMPLETO
-        self.OUTPUT_TYPE_IMAGE_DATA = str(tipo_output_type_image_data).upper()
+        self.OUTPUT_TYPE_IMAGE_DATA = str(type_output_image_data).upper()
 
 
     @staticmethod

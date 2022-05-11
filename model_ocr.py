@@ -32,6 +32,7 @@ __data_atualizacao__ = "16/10/2021"
 
 
 from inspect import stack
+from os import getcwd, path
 import unidecode
 import re
 import warnings
@@ -43,11 +44,12 @@ from CONFIG import config
 from MODELS.main_model_four import main_model as main_model_four
 from PROCESS_FIELDS.process_names import Execute_Process_Names
 from PROCESS_FIELDS.process_location import Execute_Process_Location
-from UTILS.generic_functions import format_values_int
+from UTILS.generic_functions import get_date_time_now, format_values_int, save_image
 from UTILS.extract_infos import Extract_Infos
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
 from UTILS.conectores_db.main import conectores
+from PROCESS_FIELDS.process_confidence_percentage import get_confidence_percentage, get_average
 
 warnings.filterwarnings("ignore")
 
@@ -75,11 +77,23 @@ class Execute_OCR_RG(object):
         # SELECIONA APENAS LETRAS
         self.regex_only_letters = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS")
 
+        # SELECIONA APENAS NÚMEROS
+        self.regex_only_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_NUMBERS")
+
+        # SELECIONA APENAS LETRAS E NÚMEROS
+        self.regex_only_letters_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_NUMBERS")
+
         # SELECIONA APENAS LETRAS, PONTOS, BARRAS, TRAÇOS E NÚMEROS
         self.regex_only_letters_numbers_dot_bars_dashes = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_NUMBERS_DOT_BARS_DASHES")
 
         # SELECIONA APENAS A LETRA X, PONTOS, BARRAS, TRAÇOS E NÚMEROS
         self.regex_only_x_numbers_dot_bars_dashes = orchestra_extract_infos.get_value_regex("REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES")
+
+        # SELECIONA APENAS A LETRA X E NÚMEROS
+        self.regex_only_x_numbers = orchestra_extract_infos.get_value_regex("REGEX_ONLY_X_NUMBERS_DOT_BARS_DASHES")
+
+        # SELECIONA APENAS DATAS
+        self.regex_only_dates = orchestra_extract_infos.get_value_regex("REGEX_ONLY_DATES")
 
         # SELECIONA APENAS LETRAS, PONTO (.) E TRAÇO (-)
         self.regex_only_letters_dot_dash = orchestra_extract_infos.get_value_regex("REGEX_ONLY_LETTERS_DOT_DASH")
@@ -398,20 +412,29 @@ class Execute_OCR_RG(object):
                   bounding_positions['x1']:bounding_positions['x2']]
 
             # REALIZANDO O OCR
-            info_extracted[field[0]] = ocr_functions(tipo_retorno_ocr_input="TEXTO").Orquestra_OCR(roi)
+            value_ocr = ocr_functions(type_return_ocr_input="TEXTO").Orquestra_OCR(roi)
 
             # OBTENDO O INFO_OCR
             # APLICANDO O OCR NO CROP - MODELO 2
-            info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO",
-                                     tipo_output_type_image_data="DATAFRAME").Orquestra_OCR(roi)
+            info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
+                                     type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA).Orquestra_OCR(roi)
 
             # VISUALIZANDO O BOUNDING BOX
-            image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
+            # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
 
             # VISUALIZANDO O CROP
-            image_view_functions.view_image_with_coordinates(roi, window_name=field)
+            # image_view_functions.view_image_with_coordinates(roi, window_name=field)
 
+            # SALVANDO A IMAGEM
+            save_image(roi, dir_save=path.join(getcwd(), "RESULTADO_OCR"),
+                       name_save="{}{}{}".format(get_date_time_now("%d%m%Y%H%M%S"), field, ".png"))
 
+            # OBTENDO O PERCENTUAL DE CONFIANÇA
+            confidence = get_average(get_confidence_percentage(value_ocr,
+                                                               info_ocr))
+
+            # ARMAZENANDO VALOR DO OCR E O PERCENTUAL DE CONFIANÇA
+            info_extracted[field[0]] = [value_ocr, confidence]
 
         return info_extracted
 
@@ -441,7 +464,7 @@ class Execute_OCR_RG(object):
         bounding_positions = {}
 
         # REALIZANDO O OCR (OBTENDO OS DADOS DO OCR)
-        info_doc = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(img)
+        info_doc = ocr_functions(type_return_ocr_input="COMPLETO").Orquestra_OCR(img)
 
         # PERCORRENDO CADA UM DOS CAMPOS E OBTENDO AS SUAS RESPECTIVAS COORDENADAS
         for idx, box in enumerate(range(len(info_doc["text"]))):
@@ -493,40 +516,42 @@ class Execute_OCR_RG(object):
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS NUMÉRICOS
 
         for column in ["RG", "CPF"]:
-            info_extracted[column] = self.__postprocess_num(info_extracted[column])
-            info_extracted[column] = info_extracted[column].split(",")
+            info_extracted[column][0] = self.__postprocess_num(info_extracted[column][0])
+            info_extracted[column][0] = info_extracted[column][0].split(",")[0]
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS DATAS
         for column in ["DATA_EXPED", "DATA_NASC"]:
-            info_extracted[column] = self.__postprocess_dates(info_extracted[column])
+            info_extracted[column][0] = self.__postprocess_dates(info_extracted[column][0])
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO ORIGEM
-        info_extracted["CIDADE_ORIGEM"], info_extracted["ESTADO_ORIGEM"] = Execute_Process_Location().orchestra_postprocess_location(
-            info_extracted["CIDADE_ORIGEM"])
+        info_extracted["CIDADE_ORIGEM"][0], \
+        info_extracted["ESTADO_ORIGEM"][0] = Execute_Process_Location().orchestra_postprocess_location(
+            info_extracted["CIDADE_ORIGEM"][0])
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS CIDADE E ESTADO NASCIMENTO
-        info_extracted["CIDADE_NASC"], info_extracted["ESTADO_NASC"] = Execute_Process_Location().orchestra_postprocess_location(
-            info_extracted["CIDADE_NASC"])
+        info_extracted["CIDADE_NASC"][0], \
+        info_extracted["ESTADO_NASC"][0] = Execute_Process_Location().orchestra_postprocess_location(
+            info_extracted["CIDADE_NASC"][0])
 
         # RESULTADOS ATÉ ENTÃO
-        results_ocr = [info_extracted["RG"], info_extracted["CPF"],
-                       info_extracted["DATA_EXPED"], info_extracted["DATA_NASC"],
-                       info_extracted["CIDADE_ORIGEM"], info_extracted["ESTADO_ORIGEM"],
-                       info_extracted["CIDADE_NASC"], info_extracted["ESTADO_NASC"]]
+        results_ocr = [info_extracted["RG"][0], info_extracted["CPF"][0],
+                       info_extracted["DATA_EXPED"][0], info_extracted["DATA_NASC"][0],
+                       info_extracted["CIDADE_ORIGEM"][0], info_extracted["ESTADO_ORIGEM"][0],
+                       info_extracted["CIDADE_NASC"][0], info_extracted["ESTADO_NASC"][0]]
 
         # APLICANDO PÓS PROCESSAMENTO DE NOMES
-        info_extracted = Execute_Process_Names().orchestra_postprocess_names(info_extracted,
-                                                                             results_ocr,
-                                                                             settings.REGEX_ONLY_LETTERS)
+        info_extracted = Execute_Process_Names().orchestra_postprocess_names(info_extracted=info_extracted,
+                                                                             filters_validate=results_ocr,
+                                                                             pattern_only_letters=settings.REGEX_ONLY_LETTERS)
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
         for column in ["NOME", "NOME_MAE", "NOME_PAI", "CIDADE_ORIGEM",
                        "ESTADO_ORIGEM", "CIDADE_NASC", "ESTADO_NASC"]:
-            info_extracted[column] = self.__postprocess_string(info_extracted[column])
+            info_extracted[column][0] = self.__postprocess_string(info_extracted[column][0])
 
         # APLICANDO O PÓS PROCESSAMENTO EM TODOS OS CAMPOS
         for column in info_extracted.keys():
-            info_extracted[column] = info_extracted[column].replace("\n", "").strip()
+            info_extracted[column][0] = info_extracted[column][0].replace("\n", "").strip()
 
         # RETORNANDO OS DADOS APÓS APLICAÇÃO DOS PÓS PROCESSAMENTOS
         return info_extracted

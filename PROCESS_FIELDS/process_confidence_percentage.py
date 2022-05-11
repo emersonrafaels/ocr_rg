@@ -71,11 +71,17 @@ def get_confidence_percentage(list_values, info_ocr_image_data):
 
             try:
                 # OBTENDO O VALOR NO DATAFRAME DE INFO_OCR
-                value_conf_percentage = info_ocr_image_data[info_ocr_image_data["text"].str.contains(value_text,
-                                                                                                     na=False)]["conf"].values[0]
+                filter_value = info_ocr_image_data[info_ocr_image_data["text"].astype(str).str.contains(value_split,
+                                                                                                        na=False)]
+
+                if not filter_value.empty:
+                    # OBTENDO O VALOR DO PERCENTUAL DE CONFIANÇA
+                    value_conf_percentage = filter_value["conf"].values[0]
+                else:
+                    value_conf_percentage = 0
 
                 # REALIZANDO O APPEND NO RESULTADO FINAL
-                result_confidence_percentage.append([value_text, value_conf_percentage])
+                result_confidence_percentage.append([value_split, value_conf_percentage])
 
             except Exception as ex:
                 print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))

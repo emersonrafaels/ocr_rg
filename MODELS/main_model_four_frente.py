@@ -161,7 +161,7 @@ class model_four_frente():
     def orchestra_model(self):
 
         # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 3
-        info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(self.dir_image)
+        info_ocr = ocr_functions(type_return_ocr_input="COMPLETO").Orquestra_OCR(self.dir_image)
 
         _, text = ocr_functions.convert_resultado_ocr_completo(info_ocr)
 

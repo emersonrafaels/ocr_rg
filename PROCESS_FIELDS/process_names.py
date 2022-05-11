@@ -419,7 +419,7 @@ class Execute_Process_Names():
             if validador_verify_find_intersection:
 
                 # OBTENDO O VALOR DE INTERSECÇÃO (USANDO O PRIMEIRO VALOR VALIDADO)
-                pattern_find = [value for value in list_aux if value.find(validador_verify_find_intersection[0]) != -1][
+                pattern_find = [value for value in list_aux if value.find(validador_verify_find_intersection[0])!=-1][
                     0]
 
                 result = list(map(list_aux.__getitem__, range(list_aux.index(pattern_find) + 1,
@@ -527,6 +527,7 @@ class Execute_Process_Names():
                             # print("NOME: TESTANDO: {}".format(value_y))
 
                             # VALIDANDO SE É UM NOME VÁLIDO
+                            # BOOL, [NOME NA BASE, PERCENTUAL DE MATCH], SEXO
                             result_valid_name = Execute_Process_Names.get_first_name_valid(self,
                                                                                            result_regex)
 
@@ -773,7 +774,10 @@ class Execute_Process_Names():
         return nome, nome_pai, nome_mae
 
 
-    def orchestra_get_names(self, text, filters_validate=[], info_ocr=None, pattern=None):
+    def orchestra_get_names(self, text,
+                            filters_validate=[],
+                            info_ocr=config.INFO_OCR_DEFAULT,
+                            pattern=settings.REGEX_ONLY_LETTERS):
 
         """
 
@@ -794,7 +798,10 @@ class Execute_Process_Names():
             # Arguments
                 text                       - Required : Texto a ser analisado (String)
                 filters_validate           - Optional : Filtros e validações
-                                                  a serem aplicadas (List)
+                                                        a serem aplicadas (List)
+                info_ocr                   - Optional : DataFrame com as informações
+                                                        da leitura do OCR (DataFrame)
+                pattern                    - Optional : Padrão de leitura regex e pós-processamento (Regex)
 
             # Returns
                 nome                       - Required : Nome obtido (String)
@@ -805,6 +812,9 @@ class Execute_Process_Names():
 
         # INICIANDO A LISTA AUXILIAR PARA ARMAZENAR OS VALORES E OS PERCENTUAIS DE CONFIANÇA
         list_names_percent_confidence = []
+
+        if pattern == None:
+            pattern = settings.REGEX_ONLY_LETTERS
 
         # VERIFICANDO SE É POSSÍVEL ENCONTRAR AS PALAVRAS NOMES E FILIAÇÃO - ALTERNATIVA 1
         nome_alternativa_um = Execute_Process_Names.find_nome_filiacao(self, text,

@@ -136,7 +136,8 @@ class model_four():
     def orchestra_model(self):
 
         # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 4
-        info_ocr = ocr_functions(tipo_retorno_ocr_input="COMPLETO").Orquestra_OCR(self.dir_image)
+        info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
+                                 type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA).Orquestra_OCR(self.dir_image)
 
         # OBTENDO O INFO_OCR
         # SOBREPONDO O INFO_OCR, CONVERTIDO NO FORMATO DATAFRAME
@@ -177,9 +178,12 @@ class model_four():
                                                              info_ocr=info_ocr)
 
         # OBTENDO AS CIDADES-ESTADOS
-        cidade_nasc, estado_nasc, cidade_origem, estado_origem = Execute_Process_Location().get_result_location(text,
-                                                                                                                self.pattern_uf,
-                                                                                                                info_ocr=info_ocr)
+        cidade_nasc, \
+        estado_nasc, \
+        cidade_origem, \
+        estado_origem = Execute_Process_Location().get_result_location(text,
+                                                                       self.pattern_uf,
+                                                                       info_ocr=info_ocr)
 
         # RESULTADOS ATÉ ENTÃO
         results_ocr = [data_exp[0], data_nasc[0],
@@ -206,19 +210,19 @@ class model_four():
 
         # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
         nome = [model_four.__postprocess_string(nome[0], settings.REGEX_ONLY_LETTERS),
-                round(nome[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                round(float(nome[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         nome_pai = [model_four.__postprocess_string(nome_pai[0], settings.REGEX_ONLY_LETTERS),
-                    round(nome_pai[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                    round(float(nome_pai[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         nome_mae = [model_four.__postprocess_string(nome_mae[0], settings.REGEX_ONLY_LETTERS),
-                    round(nome_mae[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                    round(float(nome_mae[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         cidade_nasc = [model_four.__postprocess_string(cidade_nasc[0], settings.REGEX_ONLY_LETTERS),
-                       round(cidade_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                       round(float(cidade_nasc[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         estado_nasc = [model_four.__postprocess_string(estado_nasc[0], settings.REGEX_ONLY_LETTERS),
-                       round(estado_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                       round(float(estado_nasc[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         cidade_origem = [model_four.__postprocess_string(cidade_origem[0], settings.REGEX_ONLY_LETTERS),
-                         round(cidade_origem[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                         round(float(cidade_origem[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
         estado_origem = [model_four.__postprocess_string(estado_origem[0], settings.REGEX_ONLY_LETTERS),
-                         round(estado_origem[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+                         round(float(estado_origem[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
 
         return text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
                nome, nome_pai, nome_mae, \

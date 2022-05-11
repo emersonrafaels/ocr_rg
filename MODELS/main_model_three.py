@@ -136,7 +136,12 @@ class model_three():
     def orchestra_model(self):
 
         # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 3
-        text = ocr_functions().Orquestra_OCR(self.dir_image)
+        text = ocr_functions(type_return_ocr_input="TEXTO").Orquestra_OCR(self.dir_image)
+
+        # OBTENDO O INFO_OCR
+        # APLICANDO O OCR NO DOCUMENTO INTEIRO - MODELO 3
+        info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
+                                 type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA).Orquestra_OCR(self.dir_image)
 
         # INICIANDO AS VARIÁVEIS
         data_exp = ""
@@ -155,42 +160,69 @@ class model_three():
         #print("-"*50)
 
         # OBTENDO AS DATAS
-        data_exp, data_nasc = Execute_Process_Data().get_result_datas(text, self.pattern_data)
+        data_exp, data_nasc = Execute_Process_Data().get_result_datas(text,
+                                                                      self.pattern_data,
+                                                                      info_ocr=info_ocr)
 
         # OBTENDO CPF
         list_result_cpf = Execute_Process_RG_CPF().get_values(text,
                                                               self.pattern_cpf,
-                                                              limit_values=1)
+                                                              limit_values=1,
+                                                              info_ocr=info_ocr)
 
         # OBTENDO RG (FILTRANDO VALORES QUE JÁ CONSTAM COMO CPF)
         list_result_rg = Execute_Process_RG_CPF().get_values(text,
                                                              self.pattern_rg,
-                                                             filters_validate=list_result_cpf,
-                                                             limit_values=1)
+                                                             filters_validate=[list_result_cpf[0][0]],
+                                                             limit_values=1,
+                                                             info_ocr=info_ocr)
 
         # OBTENDO AS CIDADES-ESTADO
-        cidade_nasc, estado_nasc, cidade_origem, estado_origem = Execute_Process_Location().get_result_location(text,
-                                                                                                                self.pattern_uf)
+        cidade_nasc, \
+        estado_nasc, \
+        cidade_origem, \
+        estado_origem = Execute_Process_Location().get_result_location(text,
+                                                                       self.pattern_uf,
+                                                                       info_ocr=info_ocr)
 
         # RESULTADOS ATÉ ENTÃO
-        results_ocr = [data_exp, data_nasc, cidade_nasc, estado_nasc, cidade_origem, estado_origem] + list_result_cpf + list_result_rg
+        # RESULTADOS ATÉ ENTÃO
+        results_ocr = [data_exp[0], data_nasc[0],
+                       cidade_nasc[0], estado_nasc[0],
+                       cidade_origem[0], estado_origem[0],
+                       list_result_rg[0][0],
+                       list_result_cpf[0][0]]
 
         # OBTENDO OS NOMES
         nome, nome_pai, nome_mae = Execute_Process_Names().orchestra_get_names(text,
-                                                                               results_ocr)
+                                                                               results_ocr,
+                                                                               info_ocr=info_ocr)
 
         # FORMATANDO O RESULTADO DOS CAMPOS NUMÉRICOS
-        list_result_rg = [model_three.__postprocess_num(value_rg, settings.REGEX_ONLY_X_NUMBERS) for value_rg in list_result_rg]
-        list_result_cpf = [model_three.__postprocess_num(value_cpf, settings.REGEX_ONLY_NUMBERS) for value_cpf in list_result_cpf]
+        list_result_rg = [model_three.__postprocess_num(list_result_rg[0][0], settings.REGEX_ONLY_X_NUMBERS),
+                          round(list_result_rg[0][1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        list_result_cpf = [model_three.__postprocess_num(list_result_cpf[0][0], settings.REGEX_ONLY_NUMBERS),
+                           round(list_result_cpf[0][1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+
+        # FORMATANDO O RESULTADO DOS CAMPOS DATAS
+        data_exp = [data_exp[0], round(data_exp[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        data_nasc = [data_nasc[0], round(data_nasc[1], settings.ARREND_PERCENTAGE_CONFIDENCE)]
 
         # FORMATANDO O RESULTADO DOS CAMPOS STRINGS
-        nome = model_three.__postprocess_string(nome, settings.REGEX_ONLY_LETTERS)
-        nome_pai = model_three.__postprocess_string(nome_pai, settings.REGEX_ONLY_LETTERS)
-        nome_mae = model_three.__postprocess_string(nome_mae, settings.REGEX_ONLY_LETTERS)
-        cidade_nasc = model_three.__postprocess_string(cidade_nasc, settings.REGEX_ONLY_LETTERS_DOT_DASH)
-        estado_nasc = model_three.__postprocess_string(estado_nasc, settings.REGEX_ONLY_LETTERS)
-        cidade_origem = model_three.__postprocess_string(cidade_origem, settings.REGEX_ONLY_LETTERS_DOT_DASH)
-        estado_origem = model_three.__postprocess_string(estado_origem, settings.REGEX_ONLY_LETTERS)
+        nome = [model_three.__postprocess_string(nome[0], settings.REGEX_ONLY_LETTERS),
+                round(float(nome[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        nome_pai = [model_three.__postprocess_string(nome_pai[0], settings.REGEX_ONLY_LETTERS),
+                    round(float(nome_pai[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        nome_mae = [model_three.__postprocess_string(nome_mae[0], settings.REGEX_ONLY_LETTERS),
+                    round(float(nome_mae[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        cidade_nasc = [model_three.__postprocess_string(cidade_nasc[0], settings.REGEX_ONLY_LETTERS),
+                       round(float(cidade_nasc[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        estado_nasc = [model_three.__postprocess_string(estado_nasc[0], settings.REGEX_ONLY_LETTERS),
+                       round(float(estado_nasc[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        cidade_origem = [model_three.__postprocess_string(cidade_origem[0], settings.REGEX_ONLY_LETTERS),
+                         round(float(cidade_origem[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
+        estado_origem = [model_three.__postprocess_string(estado_origem[0], settings.REGEX_ONLY_LETTERS),
+                         round(float(estado_origem[1]), settings.ARREND_PERCENTAGE_CONFIDENCE)]
 
         return text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
                nome, nome_pai, nome_mae, \
