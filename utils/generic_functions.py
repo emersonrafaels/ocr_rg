@@ -124,6 +124,7 @@ def get_files_directory(path_dir, specific_type=None):
 
     return list_files
 
+
 def converte_int(valor_para_converter):
 
     """
