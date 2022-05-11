@@ -1,5 +1,6 @@
 import datetime
 
+from UTILS.base64_encode_decode import image_to_base64
 from UTILS.conectores_db.main import conectores
 from UTILS.generic_functions import get_date_time_now
 from MODELS.main_model_three import main_model
@@ -110,7 +111,8 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
                 print("IMAGEM ATUAL: {}".format(image))
                 dt_hr_inicio = get_date_time_now("%d/%m/%Y %H:%M:%S")
 
-                result_image = main_model(image)
+                # ENVIANDO PARA O MODELO TRES, A IMAGEM CONVERTIDA EM BASE64
+                result_image = main_model(image_to_base64(image))
 
                 dt_hr_fim = get_date_time_now("%d/%m/%Y %H:%M:%S")
 
