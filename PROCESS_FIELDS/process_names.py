@@ -38,32 +38,75 @@ class Execute_Process_Names():
         self.confidence_weighted = settings.CONFIDENCE_WEIGHTED
 
 
-    def create_text(self, x, y, z):
+    def create_text(self, name_x, name_y, name_z):
 
-        x = x.split("\n")
-        y = y.split("\n")
-        z = z.split("\n")
+        """
 
-        list_names = list(dict.fromkeys(x + y + z))
+            CONCATENA TRÊS NOMES DISTINTOS.
+
+            OS NOMES SÃO:
+                1) name_x
+                2) name_y
+                3) name_z
+
+                # Arguments
+                    info          - Required : Dicionário de nomes (Dict)
+
+                # Returns
+                    text          - Required : String contendo a concatenação dos nomes (String)
+
+        """
+
+        name_x = name_x.split("\n")
+        name_y = name_y.split("\n")
+        name_z = name_z.split("\n")
+
+        list_names = list(dict.fromkeys(name_x + name_y + name_z))
 
         text = "\n".join(list_names)
 
         return text
 
 
-    def concatenate_names(self, info):
+    def orchestra_concatenate_get_names(self, info):
 
-        text = Execute_Process_Names.create_text(self,
-                                                 info["NOME"],
-                                                 info["NOME_PAI"],
-                                                 self["NOME_MAE"])
+        """
 
-        # OBTENDO NOME, NOME DO PAI E NOME DA MÃE
-        # UTILIZANDO O PROCESSO DE OBTENÇÃO DE NOME ATRAVÉS
-        # DA ORQUESTRAÇÃO DE REGRAS PARA OBTENÇÃO DE NOMES
-        nome, nome_pai, nome_mae = Execute_Process_Names.get_names(self, text=text)
+            CONCATENA TODOS OS NOMES CONTIDOS EM UM DICT DE NOMES.
 
-        info["NOME"], info["NOME_PAI"], info["NOME_MAE"]= nome, nome_pai, nome_mae
+            AS CHAVES ESPERADAS SÃO:
+                1) NOME
+                2) NOME_PAI
+                3) NOME_MAE
+
+                # Arguments
+                    info          - Required : Dicionário de nomes (Dict)
+
+                # Returns
+                    info          - Required : Dicionário de nomes atualizado (Dict)
+
+        """
+
+        try:
+            # CRIANDO O TEXTO DA CONCATENAÇÃO DE NOMES
+            text = Execute_Process_Names.create_text(self,
+                                                     info["NOME"][0],
+                                                     info["NOME_PAI"][0],
+                                                     info["NOME_MAE"][0])
+
+            # REALIZANDO O GETpNAMES
+            nome, nome_pai, nome_mae = Execute_Process_Names.get_names(self, text=text)
+
+            # ATUALIZANDO OS NOMES DOS DICIONÁRIOS
+            info["NOME"][0] = nome
+            info["NOME_PAI"][0] = nome_pai
+            info["NOME_MAE"][0] = nome_mae
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
+
+        # RETORNANDO OS VALORES
+        return info
 
 
     def get_confidence_names(self, name,
@@ -284,8 +327,9 @@ class Execute_Process_Names():
 
 
     def orchestra_postprocess_names(self, info_extracted,
+                                    info_ocr=config.INFO_OCR_DEFAULT,
                                     filters_validate=[],
-                                    pattern_only_letters=settings.REGEX_ONLY_LETTERS):
+                                    pattern=settings.REGEX_ONLY_LETTERS):
 
         """
 
@@ -295,10 +339,12 @@ class Execute_Process_Names():
 
             # Arguments
                 info_extracted       - Required : Textos a serem analisado (Dict)
+                info_ocr             - Optional : DataFrame com as informações de
+                                                  leitura do OCR (DataFrame)
                 filters_validate     - Optional : Filtros e validações
                                                  a serem aplicadas (List)
 
-                regex_only_letters   - Optional : Pattern a ser utilizado (Regex)
+                pattern              - Optional : Pattern a ser utilizado (Regex)
 
             # Returns
                 output               - Required : Valor após processamento (String)
@@ -308,8 +354,10 @@ class Execute_Process_Names():
         # INICIANDO O VALIDADOR DE FIM DA FUNÇÃO
         validador = False
 
+        # INICIALIZANDO A LISTA DE RESULTADO DE NOMES
         result_names = []
 
+        # INICIALIZANDO O DICT DE NOMES
         dict_names = ["NOME", "NOME_MAE", "NOME_PAI"]
 
         for field in dict_names:
@@ -317,10 +365,10 @@ class Execute_Process_Names():
             validador = False
 
             # FILTRANDO O VALOR DO CAMPO ATUAL
-            value_x = info_extracted[field]
+            value_x = info_extracted[field][0]
 
             # MANTENDO APENAS LETRAS
-            result_split = re.sub(pattern=pattern_only_letters,
+            result_split = re.sub(pattern=pattern,
                                   string=value_x,
                                   repl=" ").replace("  ", " ").strip()
 
@@ -360,13 +408,20 @@ class Execute_Process_Names():
                                                                limit=1)
 
                 if len(result_order_names):
-                    info_extracted[field] = value_x[value_x.find(result_order_names[0][0]):]
+                    info_extracted[field][0] = value_x[value_x.find(result_order_names[0][0]):]
 
                 else:
-                    info_extracted[field] = ""
+                    info_extracted[field][0] = ""
 
         # CONCATENANDO NOMES
-        info_extracted = Execute_Process_Names.concatenate_names(self, info_extracted)
+        info_extracted = Execute_Process_Names.orchestra_concatenate_get_names(self, info_extracted)
+
+        # OBTENDO OS PERCENTUAIS DE CONFIANÇA
+        for field in dict_names:
+            info_extracted[field] = Execute_Process_Names.get_confidence_names(self,
+                                                                               name=info_extracted[field][0],
+                                                                               info_ocr=info_ocr,
+                                                                               pattern=pattern)
 
         return info_extracted
 

@@ -26,13 +26,14 @@ __data_atualizacao__ = "16/10/2021"
 
 
 from inspect import stack
+from os import path, getcwd
 
 import cv2
 from dynaconf import settings
 import numpy as np
 import imutils
 
-from UTILS.generic_functions import get_date_time_now
+from UTILS.generic_functions import get_date_time_now, save_image
 from UTILS.image_read import read_image_gray
 from UTILS.image_view import image_view_functions
 
@@ -266,21 +267,26 @@ class Image_Pre_Processing(object):
         validator = True
 
         try:
-            thresh = cv2.adaptiveThreshold(img, self.__threshold_max_color_value,
-                                           cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                           cv2.THRESH_BINARY_INV, settings.THRESHOLD_KSIZE,
-                                           settings.SUBTRACT_FROM_MEAN)
+            thresh1 = cv2.adaptiveThreshold(img, self.__threshold_max_color_value,
+                                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                            cv2.THRESH_BINARY_INV, settings.THRESHOLD_KSIZE,
+                                            settings.SUBTRACT_FROM_MEAN)
+
+            thresh2 = cv2.adaptiveThreshold(img, self.__threshold_max_color_value,
+                                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                            cv2.THRESH_BINARY, settings.THRESHOLD_KSIZE,
+                                            settings.SUBTRACT_FROM_MEAN)
 
             print("OCR RG - TÉCNICA DE LIMIAR ADAPTATIVO APLICADO COM SUCESSO - {}".format(get_date_time_now("%d/%m/%Y %H:%M:%S")))
 
             validator = True
 
-            return validator, thresh
+            return validator, thresh1, thresh2
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 
-        return validator, img
+        return validator, img, img
 
 
     def __preprocess_blur_threshold_img(self, img):
@@ -312,12 +318,12 @@ class Image_Pre_Processing(object):
             if validator:
 
                 # APLICANDO O LIMIAR PARA MELHOR SEPARAÇÃO DE PLANO PRINCIPAL E FUNDO
-                validator, thresh = Image_Pre_Processing._threshold_image(self, blur)
+                validator, thresh1, thresh2 = Image_Pre_Processing._threshold_image(self, blur)
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 
-        return validator, thresh
+        return validator, thresh1, thresh2
 
 
     def __get_max_contour(self, img):
@@ -584,49 +590,66 @@ class Image_Pre_Processing(object):
         # INICIANDO AS VARIÁVEIS QUE SERÃO RETORNADAS
         image_cropped_contour = image_warped = None
 
-        if not image is None:
+        try:
 
-            while max(image.shape) > 2000:
-                image = cv2.pyrDown(image)
+            if not image is None:
 
-            # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
-            if image.shape[1] > self.__width:
-                image = self._resize_image(image)
+                while max(image.shape) > 2000:
+                    image = cv2.pyrDown(image)
 
-            # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM BLURRING
-            validator, preproc_img = self.__preprocess_blur_threshold_img(image)
+                # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
+                if image.shape[1] > self.__width:
+                    image = self._resize_image(image)
 
-            if validator:
-
-                # ENCONTRAMOS O CONTORNO CUJA ÁREA É MAIOR, POIS REPRESENTA O QUADRO DO DOCUMENTO;
-                validator, contour = self.__get_max_contour(preproc_img)
+                # REALIZANDO O PRÉ PROCESSAMENTO DA IMAGEM COM BLURRING
+                validator, preproc_img_contour, preproc_img_ocr = self.__preprocess_blur_threshold_img(image)
 
                 if validator:
 
-                    # COM O CONTORNO ENCONTRADO A ÚLTIMA ETAPA, REALIZAMOS O CROP DA IMAGEM
-                    validator, image_cropped_contour = self.__crop_image_countour(image, contour)
-
-                    # COM O CONTORNO ENCONTRADO NA ÚLTIMA ETAPA, CRIAMOS UMA MÁSCARA COM A ÁREA REPRESENTADA PELA MOLDURA;
-                    validator, mask = self.__generate_mask(image, contour)
+                    # ENCONTRAMOS O CONTORNO CUJA ÁREA É MAIOR, POIS REPRESENTA O QUADRO DO DOCUMENTO;
+                    validator, contour = self.__get_max_contour(preproc_img_contour)
 
                     if validator:
 
-                        # USANDO ESTA MÁSCARA, PODEMOS ENCONTRAR OS QUATRO CANTOS DO DOCUMENTO DE IDENTIFICAÇÃO NA IMAGEM ORIGINAL;
-                        _, pts1 = self.__find_corners(mask)
+                        # COM O CONTORNO ENCONTRADO A ÚLTIMA ETAPA, REALIZAMOS O CROP DA IMAGEM
+                        validator, image_cropped_contour = self.__crop_image_countour(image, contour)
 
-                        pts2 = self.__find_new_corners(pts1, high_value=self.__output_size)
+                        # COM O CONTORNO ENCONTRADO NA ÚLTIMA ETAPA, CRIAMOS UMA MÁSCARA COM A ÁREA REPRESENTADA PELA MOLDURA;
+                        validator, mask = self.__generate_mask(image, contour)
 
-                        # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA, DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
-                        M = cv2.getPerspectiveTransform(pts1, pts2)
-                        image_warped = cv2.warpPerspective(image, M, (self.__output_size, self.__output_size))
+                        if validator:
 
-                else:
-                    image_cropped_contour = image_warped = image
+                            # USANDO ESTA MÁSCARA, PODEMOS ENCONTRAR OS
+                            # QUATRO CANTOS DO DOCUMENTO DE IDENTIFICAÇÃO NA IMAGEM ORIGINAL;
+                            _, pts1 = self.__find_corners(mask)
+
+                            pts2 = self.__find_new_corners(pts1, high_value=self.__output_size)
+
+                            # APLICAMOS O DEWARPING E TRANSFORMAMOS NOSSA PERSPECTIVA,
+                            # DE FORMA QUE OS QUATRO CANTOS DO DOCUMENTO SEJAM IGUAIS À IMAGEM.
+                            if pts1 is not None and pts2 is not None:
+                                M = cv2.getPerspectiveTransform(pts1, pts2)
+                                image_warped = cv2.warpPerspective(image, M,
+                                                                   (self.__output_size,
+                                                                    self.__output_size))
+
+                    else:
+                        image_cropped_contour = image_warped = preproc_img_ocr
+
+        except Exception as ex:
+            print("ERRO NA FUNÇÃO: {} - {}".format(stack()[0][3], ex))
 
 
         # VISUALIZANDO A IMAGEM APÓS O PRÉ PROCESSAMENTO
         #image_view_functions.view_image(image, window_name="ORIGINAL")
         #image_view_functions.view_image(image_cropped_contour, window_name="CROPPED")
         #image_view_functions.view_image(image_warped, window_name="WARPED")
+
+        for image_value in [[image, "ORIGINAL"], [image_cropped_contour, "CROPPED"], [image_warped, "WARPED"]]:
+
+            # SALVANDO A IMAGEM
+            save_image(image_value[0],
+                       dir_save=path.join(getcwd(), "RESULTADO_OCR"),
+                       name_save="{}{}{}".format(get_date_time_now("%d%m%Y%H%M%S"), image_value[1], ".png"))
 
         return image, image_cropped_contour, image_warped

@@ -389,6 +389,10 @@ class Execute_OCR_RG(object):
             # Returns
                 info_extracted     - Required : Resultando contendo o OCR
                                                 para cada um dos campos (Dict)
+                list_result_ocr    - Required : Lista de textos obtidos no
+                                                OCR de todos os campos (List)
+                info_ocr           - Optional : DataFrame com as informações de
+                                                leitura do OCR (DataFrame)
 
         """
 
@@ -397,6 +401,12 @@ class Execute_OCR_RG(object):
 
         # INICIANDO O DICT DE POSIÇÕES
         bounding_positions = {}
+
+        # INICIALIZANDO A LISTA QUE ARMAZENARÁ OS TEXTOS - RESULTADOS DOS OCR's OBTIDOS
+        list_result_ocr = []
+
+        # INICIALIZANDO O DATAFRAME QUE ARMAZENARÁ O INFO_OCR
+        info_ocr = config.INFO_OCR_DEFAULT
 
         # PERCORRENDO CADA UM DOS CAMPOS E OBTENDO AS SUAS RESPECTIVAS COORDENADAS
         for field in self.COORDS:
@@ -416,8 +426,14 @@ class Execute_OCR_RG(object):
 
             # OBTENDO O INFO_OCR
             # APLICANDO O OCR NO CROP - MODELO 2
-            info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
-                                     type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA).Orquestra_OCR(roi)
+            info_ocr_roi = ocr_functions(type_return_ocr_input="COMPLETO",
+                                         type_output_image_data=settings.OUTPUT_TYPE_IMAGE_DATA).Orquestra_OCR(roi)
+
+            # ARMAZENANDO O OCR OBTIDO
+            list_result_ocr.append(value_ocr)
+
+            # ARMAZENANDO O ROI SOBRE O DATAFRAME FINAL - INFO OCR
+            info_ocr = info_ocr.append(info_ocr_roi)
 
             # VISUALIZANDO O BOUNDING BOX
             # image_view_functions.view_image_with_coordinates(image_view_functions.create_bounding_box(img, bounding_positions))
@@ -431,12 +447,12 @@ class Execute_OCR_RG(object):
 
             # OBTENDO O PERCENTUAL DE CONFIANÇA
             confidence = get_average(get_confidence_percentage(value_ocr,
-                                                               info_ocr))
+                                                               info_ocr_roi))
 
             # ARMAZENANDO VALOR DO OCR E O PERCENTUAL DE CONFIANÇA
             info_extracted[field[0]] = [value_ocr, confidence]
 
-        return info_extracted
+        return info_extracted, list_result_ocr, info_ocr
 
 
     def execute_ocr_box(self, img):
@@ -496,7 +512,7 @@ class Execute_OCR_RG(object):
         return info_extracted
 
 
-    def orchestra_pos_processing(self, info_extracted):
+    def orchestra_pos_processing(self, info_extracted, info_ocr):
 
         """
 
@@ -505,6 +521,8 @@ class Execute_OCR_RG(object):
             # Arguments
                 info_extracted     - Required : Resultando contendo o OCR
                                                 para cada um dos campos (Dict)
+                info_ocr           - Optional : DataFrame com as informações de
+                                                leitura do OCR (DataFrame)
 
             # Returns
                 info_extracted     - Required : Resultando contendo o OCR
@@ -541,8 +559,9 @@ class Execute_OCR_RG(object):
 
         # APLICANDO PÓS PROCESSAMENTO DE NOMES
         info_extracted = Execute_Process_Names().orchestra_postprocess_names(info_extracted=info_extracted,
+                                                                             info_ocr=info_ocr,
                                                                              filters_validate=results_ocr,
-                                                                             pattern_only_letters=settings.REGEX_ONLY_LETTERS)
+                                                                             pattern=settings.REGEX_ONLY_LETTERS)
 
         # APLICANDO PÓS PROCESSAMENTO NOS CAMPOS TEXTUAIS
         for column in ["NOME", "NOME_MAE", "NOME_PAI", "CIDADE_ORIGEM",
@@ -562,20 +581,21 @@ class Execute_OCR_RG(object):
         # INICIANDO O DICT QUE ARMAZENARÁ OS RESULTADOS DO OCR - CAMPO A CAMPO
         info_field = {}
 
-        # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - DOCUMENTO INTEIRO
-        info_doc = ""
+        # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - TEXTO OBTIDO
+        text = []
 
-        # INICIANDO A STRING QUE ARMAZENARÁ O RESULTADO O OCR - BOUNDING BOX
-        info_box = ""
+        # INICIANDO O INFO_OCR
+        info_ocr = config.INFO_OCR_DEFAULT
 
         # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM CROPPED
         image_resize = cv2.resize(image, (self.__output_size, self.__output_size),
                                   interpolation=cv2.INTER_AREA)
 
         # APLICANDO O OCR - CAMPO A CAMPO
-        info_field = self.orchestra_execute_ocr_model_two(image_resize)
+        info_field, list_result_text_ocr, info_ocr = self.orchestra_execute_ocr_model_two(image_resize)
 
         # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
-        info_field = self.orchestra_pos_processing(info_field)
+        info_field = self.orchestra_pos_processing(info_extracted=info_field,
+                                                   info_ocr=info_ocr)
 
         return info_field

@@ -77,7 +77,7 @@ def insert_processed_image(dir_db_results, image, input_result,
                       result[-1]["ESTADO_NASC"][0], result[-1]["ESTADO_NASC"][1],
                       result[-1]["CIDADE_ORIGEM"][0], result[-1]["CIDADE_ORIGEM"][1],
                       result[-1]["ESTADO_ORIGEM"][0], result[-1]["ESTADO_ORIGEM"][1],
-                      "MODELO QUATRO - RODADA {}".format(idx),
+                      "MODELO TRES - RODADA {}".format(idx),
                       dt_hr_inicio, dt_hr_fim)
         tipo_query_bds = "INSERT"
 
