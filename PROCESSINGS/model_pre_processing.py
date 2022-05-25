@@ -595,6 +595,11 @@ class Image_Pre_Processing(object):
             if not image is None:
 
                 while max(image.shape) > 2000:
+                    """REALIZANDO A REDUÇÃO DA RESOLUÇÃO DA IMAGEM
+                    O PROCESSO DE REDUÇÃO 
+                    DE RESOLUÇÃO ENVOLVE O PROCEDIMENTO DE 
+                    REALIZAÇÃO DE SUAVIZAÇÃO
+                    A CADA PYRDOWN, A IMAGEM É REDUZIDA EM 1/4"""
                     image = cv2.pyrDown(image)
 
                 # REALIZANDO O REDIMENSIONAMENTO DA IMAGEM
