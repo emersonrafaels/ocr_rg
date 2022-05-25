@@ -29,11 +29,10 @@ from dynaconf import settings
 import unidecode
 
 from UTILS.extract_infos import Extract_Infos
-from model_pre_processing import Image_Pre_Processing
+from PROCESSINGS.model_pre_processing import Image_Pre_Processing
 from UTILS.image_ocr import ocr_functions
 from UTILS.image_read import read_image, read_image_gray
 from UTILS.image_view import image_view_functions
-from UTILS.image_convert_format import orchestra_read_image
 from PROCESS_FIELDS.process_orgao_emissor import Execute_Orgao_Emissor
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
 

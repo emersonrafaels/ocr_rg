@@ -60,6 +60,46 @@ def base64_get_extension(file_base64_decode):
     return extension
 
 
+def isbase64(input_file):
+
+    """
+
+         VERIFICA SE UM VALOR É UMA BASE64.
+
+         FUNCIONA PARA VALORES EM FORMATO:
+            1) BYTES
+            2) STRING
+
+         # Arguments
+            input_file                 - Required : Valor a ser verificado (Bytes | String)
+
+        # Returns
+            verificator                - Required : Verificador de base64 (Boolean)
+
+    """
+
+    try:
+        # VERIFICANDO SE O ENVIADO ESTÁ EM FORMATO STRING
+        if isinstance(input_file, str):
+
+            # CONVERTENDO A STRING EM BYTES
+            input_file_bytes = bytes(input_file, 'ascii')
+
+        # VERIFICANDO SE O ENVIADO ESTÁ EM FORMATO DE BYTES
+        elif isinstance(input_file, bytes):
+
+            # MANTENDO EM BYTES
+            input_file_bytes = input_file
+
+        else:
+            raise ValueError("Argument must be string or bytes")
+
+        return base64.b64encode(base64.b64decode(input_file_bytes)) == input_file_bytes, input_file_bytes
+
+    except Exception:
+        return False, None
+
+
 def base64_to_image(file_base64):
 
     """

@@ -465,17 +465,14 @@ class ocr_functions():
     def realizar_ocr(self, imagem_rgb):
 
         """
-
             REALIZA A APLICAÇÃO DE OCR SOBRE UMA IMAGEM.
             O OCR PERMITIRÁ TRANSCREVER A IMAGEM.
             CONVERSÃO IMAGEM PARA TEXTO.
-
             # Arguments
                 imagem_rgb                  - Required : Imagem para aplicação do ocr (Object)
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
                 texto                       - Required : Texto obtido (String)
-
         """
 
         # INICIANDO O VALIDADOR

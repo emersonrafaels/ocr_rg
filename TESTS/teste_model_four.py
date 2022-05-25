@@ -111,7 +111,7 @@ def orchestra_test(input_dir, output_dir, dir_db_results):
                 dt_hr_inicio = get_date_time_now("%d/%m/%Y %H:%M:%S")
 
                 # ENVIANDO PARA O MODELO QUATRO, A IMAGEM CONVERTIDA EM BASE64
-                result_image = main_model(image_to_base64(image))
+                result_image = main_model(image)
 
                 dt_hr_fim = get_date_time_now("%d/%m/%Y %H:%M:%S")
 

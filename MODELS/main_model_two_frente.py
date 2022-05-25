@@ -21,15 +21,11 @@ __version__ = "1.0"
 __author__ = """Emerson V. Rafael (EMERVIN)"""
 __data_atualizacao__ = "15/02/2022"
 
-
-from inspect import stack
-
 from dynaconf import settings
 
-from model_pre_processing import Image_Pre_Processing
+from PROCESSINGS.model_pre_processing import Image_Pre_Processing
 from model_ocr import Execute_OCR_RG
 from UTILS.image_read import read_image, read_image_gray
-from UTILS.image_convert_format import orchestra_read_image
 from PROCESS_FIELDS.process_orgao_emissor import Execute_Orgao_Emissor
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
 

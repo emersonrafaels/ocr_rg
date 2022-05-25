@@ -34,10 +34,9 @@ from inspect import stack
 
 from dynaconf import settings
 
-from model_pre_processing import Image_Pre_Processing
+from PROCESSINGS.model_pre_processing import Image_Pre_Processing
 from model_ocr import Execute_OCR_RG
 from UTILS.image_read import read_image, read_image_gray
-from UTILS.image_convert_format import orchestra_read_image
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
 
 
@@ -135,14 +134,27 @@ def main_model(dir_image):
 
         # DEFININDO AS PROPRIEDADES PARA A LEITURA DA IMAGEM (OCR)
         # REALIZANDO O OCR
-        info_doc = Execute_OCR_RG().execute_pipeline_ocr(dict_images[image])
+        text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
+        nome, nome_pai, nome_mae, \
+        cidade_nasc, estado_nasc, cidade_origem, estado_origem = Execute_OCR_RG(side_document="VERSO").execute_pipeline_ocr(dict_images[image])
 
+        # ARMAZENANDO OS RESULTADOS NO DICT DE RESULTADO
+        info_doc['RG'] = list_result_rg
+        info_doc['DATA_EXPED'] = data_exp
+        info_doc['NOME'] = nome
+        info_doc['NOME_MAE'] = nome_mae
+        info_doc['NOME_PAI'] = nome_pai
+        info_doc['DATA_NASC'] = data_nasc
+        info_doc['CPF'] = list_result_cpf
+        info_doc['CIDADE_NASC'] = cidade_nasc
+        info_doc['ESTADO_NASC'] = estado_nasc
+        info_doc['CIDADE_ORIGEM'] = cidade_origem
+        info_doc['ESTADO_ORIGEM'] = estado_origem
 
-        # ARMAZENANDO O RESULTADO
+        # VISUALIZANDO OS RESULTADOS
         print("RESULTADO OBTIDO - RODADA: {} - {}".format(idx, image))
-
         print(info_doc)
 
-        result_model.append(["", info_doc])
+        result_model.append([text, info_doc])
 
     return result_model

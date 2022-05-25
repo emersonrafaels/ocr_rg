@@ -26,6 +26,7 @@ __author__ = "Emerson V. Rafael (EMERVIN)"
 __data_atualizacao__ = "26/04/2022"
 
 
+import re
 from inspect import stack
 
 
@@ -82,6 +83,9 @@ def get_confidence_percentage(list_values, info_ocr_image_data):
 
                 # REALIZANDO O APPEND NO RESULTADO FINAL
                 result_confidence_percentage.append([value_split, value_conf_percentage])
+
+            except re.error:
+                result_confidence_percentage.append([value_text, 0])
 
             except Exception as ex:
                 print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))

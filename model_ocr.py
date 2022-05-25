@@ -41,7 +41,7 @@ import cv2
 from dynaconf import settings
 
 from CONFIG import config
-from MODELS.main_model_four import main_model as main_model_four
+from PROCESSINGS.model_pos_processing import Pos_Processing_Fields
 from PROCESS_FIELDS.process_names import Execute_Process_Names
 from PROCESS_FIELDS.process_location import Execute_Process_Location
 from UTILS.generic_functions import get_date_time_now, format_values_int, save_image
@@ -49,7 +49,6 @@ from UTILS.extract_infos import Extract_Infos
 from UTILS.image_view import image_view_functions
 from UTILS.image_ocr import ocr_functions
 from UTILS.conectores_db.main import conectores
-from PROCESS_FIELDS.process_confidence_percentage import get_confidence_percentage, get_average
 
 warnings.filterwarnings("ignore")
 
@@ -445,12 +444,8 @@ class Execute_OCR_RG(object):
             save_image(roi, dir_save=path.join(getcwd(), "RESULTADO_OCR"),
                        name_save="{}{}{}".format(get_date_time_now("%d%m%Y%H%M%S"), field, ".png"))
 
-            # OBTENDO O PERCENTUAL DE CONFIANÇA
-            confidence = get_average(get_confidence_percentage(value_ocr,
-                                                               info_ocr_roi))
-
             # ARMAZENANDO VALOR DO OCR E O PERCENTUAL DE CONFIANÇA
-            info_extracted[field[0]] = [value_ocr, confidence]
+            info_extracted[field[0]] = [value_ocr, settings.DEFAULT_CONFIDENCE]
 
         return info_extracted, list_result_ocr, info_ocr
 
@@ -594,8 +589,20 @@ class Execute_OCR_RG(object):
         # APLICANDO O OCR - CAMPO A CAMPO
         info_field, list_result_text_ocr, info_ocr = self.orchestra_execute_ocr_model_two(image_resize)
 
-        # APLICANDO O PÓS PROCESSAMENTO EM CADA UM DOS CAMPOS
-        info_field = self.orchestra_pos_processing(info_extracted=info_field,
-                                                   info_ocr=info_ocr)
+        # CONVERTENDO A LISTA DE RESULTADO DE OCR PARA O FORMATO TEXTO
+        text_result_ocr = '\n'.join(list_result_text_ocr)
 
-        return info_field
+        # REALIZANDO A OBTENÇÃO DOS CAMPOS
+        text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
+        nome, nome_pai, nome_mae, \
+        cidade_nasc, estado_nasc, cidade_origem, estado_origem = Pos_Processing_Fields().orchestra_pos_processing_get_fields(
+            text_result_ocr, info_ocr)
+
+        # RETORNANDO O RESULTADO OBTIDO
+        return text, data_exp, data_nasc, list_result_rg, list_result_cpf, \
+               nome, nome_pai, nome_mae, \
+               cidade_nasc, estado_nasc, cidade_origem, estado_origem
+
+
+
+        return text_result_ocr, info_field
