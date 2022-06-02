@@ -18,6 +18,7 @@ from inspect import stack
 
 import cv2
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import ImageFont, ImageDraw, Image
 
@@ -102,7 +103,7 @@ class image_view_functions():
 
 
     @staticmethod
-    def create_bounding_box(img, bounding_positions, color=(0, 255, 0)):
+    def create_bounding_box(img, bounding_positions, color=(0, 0, 255)):
 
         """
 
@@ -124,25 +125,25 @@ class image_view_functions():
 
         try:
             # OBTENDO AS POSIÇÕES PARA O BOUNDING BOX
-            x1 = bounding_positions['x1']
-            y1 = bounding_positions['y1']
-            x2 = bounding_positions['x2']
-            y2 = bounding_positions['y2']
+            x = bounding_positions['left']
+            y = bounding_positions['top']
+            w = bounding_positions['width']
+            h = bounding_positions['height']
 
             # DESENHNADO O BOUNDING BOX (RETANGULAR SOBRE A IMAGEM)
             # COR: color
             # ESPESSURA: 2
-            cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+            cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
 
-            return img
+            return x, y, img
         except Exception as ex:
             print(ex)
             return img
 
 
     @staticmethod
-    def put_text_image(img, text, x, y, font,
-                       text_size=32, color=(0, 0, 255)):
+    def put_text_image(img, text, x_position, y_position, font,
+                       text_size=12, color=255):
 
         """
 
@@ -167,12 +168,17 @@ class image_view_functions():
         """
 
         try:
-            font = ImageFont.truetype(font, text_size)
+            # VERIFICANDO SE O VALOR TEXTUAL NÃO É NAN
+            if not pd.isna(text):
 
-            img_pil = Image.fromarray(img)
-            draw = ImageDraw.Draw(img_pil)
-            draw.text((x, y), text, font=font, fill=color)
-            img = np.array(img_pil)
+                print(text)
+
+                font = ImageFont.truetype(font, text_size)
+
+                img_pil = Image.fromarray(img)
+                draw = ImageDraw.Draw(img_pil)
+                draw.text((x_position, y_position), text, font=font, fill=color)
+                img = np.array(img_pil)
         except Exception as ex:
             print(ex)
 

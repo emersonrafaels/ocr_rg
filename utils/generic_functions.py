@@ -21,6 +21,7 @@ from os import path, makedirs, listdir
 import re
 import time
 
+from dynaconf import settings
 from numpy import array
 import pandas as pd
 from PIL import Image
@@ -488,7 +489,9 @@ def applied_filter_not_intesection_list(list_a, list_b,
     return return_intersection
 
 
-def convert_to_date(input_value, dict_months, pattern_only_leters):
+def convert_to_date(input_value,
+                    dict_months=settings.DICT_MONTHS,
+                    pattern_only_leters=settings.REGEX_ONLY_LETTERS):
 
     """
 
@@ -496,13 +499,17 @@ def convert_to_date(input_value, dict_months, pattern_only_leters):
 
         # Arguments
             input_value            - Required : Valor para ser convertido (String)
-            dict_months            - Required : Meses e sua respectiva ordem numérica (Dict)
+            dict_months            - Optional : Meses e sua respectiva ordem numérica (Dict)
             pattern_only_leters    - Optional : Pattern para manter apenas letras na string (Regex)
 
         # Returns
             return_value           - Required : Valor após conversão (Date)
+            validator              - Required : Validador da conversão para date (Boolean)
 
     """
+
+    # INICIANDO O VALIDADOR
+    validator = True
 
     try:
         # VERIFICANDO SE HÁ LETRAS NA DATA (EX: 01/MAR/2021):
@@ -519,29 +526,29 @@ def convert_to_date(input_value, dict_months, pattern_only_leters):
 
                 # A DATA POSSUI FORMATO DD-MM-YYYY OU DD/MM/YYYY OU DD.MM.YYYY
                 if "/" in input_value:
-                    return datetime.datetime.strptime(input_value, "%d/%m/%Y").date()
+                    return datetime.datetime.strptime(input_value, "%d/%m/%Y").date(), validator
                 elif "-" in input_value:
-                    return datetime.datetime.strptime(input_value, "%d-%m-%Y").date()
+                    return datetime.datetime.strptime(input_value, "%d-%m-%Y").date(), validator
                 elif "." in input_value:
-                    return datetime.datetime.strptime(input_value, "%d.%m.%Y").date()
+                    return datetime.datetime.strptime(input_value, "%d.%m.%Y").date(), validator
 
             # A DATA POSSUI FORMATO DD-MM-YY OU DD/MM/YY OU DD.MM.YY
             if "/" in input_value:
-                return datetime.datetime.strptime(input_value, "%d/%m/%y").date()
+                return datetime.datetime.strptime(input_value, "%d/%m/%y").date(), validator
             elif "-" in input_value:
-                return datetime.datetime.strptime(input_value, "%d-%m-%y").date()
+                return datetime.datetime.strptime(input_value, "%d-%m-%y").date(), validator
             elif "." in input_value:
-                return datetime.datetime.strptime(input_value, "%d.%m.%y").date()
+                return datetime.datetime.strptime(input_value, "%d.%m.%y").date(), validator
 
-        if isinstance(input_value, datetime):
-            return datetime.date()
+        if isinstance(input_value, datetime.datetime):
+            return input_value.date(), validator
         else:
-            return datetime.datetime.now().date()
+            return datetime.datetime.now().date(), False
 
     except Exception as ex:
         print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
 
-        return datetime.date(1900, 1, 1)
+        return datetime.date(1900, 1, 1), False
 
 
 def order_list_with_arguments(list_values, number_column_order=1, limit=1):

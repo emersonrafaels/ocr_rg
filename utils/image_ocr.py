@@ -388,7 +388,47 @@ class ocr_functions():
         return list_result, text_result, infos_ocr
 
 
-    def realizar_ocr_retorno_completo(self, imagem_rgb):
+    def visualiza_bounding_box_ocr_completo(self, image, info_ocr):
+
+        """
+
+            FUNÇÃO PARA VISUALIZAR OS BOUNDING BOX E TEXTOS OBTIDOS
+            APÓS A APLICAÇÃO DO OCR COMPLETO(image_to_data).
+
+            # Arguments
+                imagem_                   - Required : Imagem para visualização do ocr (Object)
+                info_ocr                  - Required : Informações obtidas no OCR (Dict | DataFrame)
+
+            # Returns
+
+        """
+
+        try:
+
+            # CRIANDO UMA CÓPIA DA IMAGEM
+            img_copy = image.copy()
+
+            for i in range(len(info_ocr["text"])):
+
+                # DEFININDO A FONTE A SER UTILIZADA
+                fonte = 'UTILS/FONTS/calibri.ttf'
+
+                # REALIZANDO A CRIAÇÃO DA CAIXA DE TEXTO SOBRE O TEXTO
+                x, y, img_copy = image_view_functions.create_bounding_box(img=img_copy, bounding_positions=info_ocr.iloc[i])
+
+                # INSERINDO O TEXTO SOBRE A CAIXA RETANGULAR (TOP - 10)
+                img_copy = image_view_functions.put_text_image(img=img_copy,
+                                                               text=info_ocr['text'][i],
+                                                               x_position=x+20, y_position=y+20,
+                                                               font=fonte)
+
+            image_view_functions.view_image(img_copy)
+
+        except Exception as ex:
+            print(ex)
+
+
+    def realizar_ocr_retorno_completo(self, image):
 
         """
 
@@ -398,10 +438,11 @@ class ocr_functions():
 
 
             # Arguments
-                imagem_rgb                  - Required : Imagem para aplicação do ocr (Object)
+                imagem                      - Required : Imagem para aplicação do ocr (Object)
+
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
-                infos_ocr                   - Required : Informações obtidas no OCR (Dict)
+                infos_ocr                   - Required : Informações obtidas no OCR (Dict | DataFrame)
 
         """
 
@@ -449,7 +490,7 @@ class ocr_functions():
 
         try:
             # REALIZANDO O OCR SOBRE A IMAGEM
-            infos_ocr = pytesseract.image_to_data(imagem_rgb,
+            infos_ocr = pytesseract.image_to_data(image,
                                                   lang=self.lang_padrao,
                                                   config=self.config_tesseract_psm,
                                                   output_type=self.OUTPUT_TYPE_IMAGE_DATA)
@@ -468,8 +509,10 @@ class ocr_functions():
             REALIZA A APLICAÇÃO DE OCR SOBRE UMA IMAGEM.
             O OCR PERMITIRÁ TRANSCREVER A IMAGEM.
             CONVERSÃO IMAGEM PARA TEXTO.
+
             # Arguments
                 imagem_rgb                  - Required : Imagem para aplicação do ocr (Object)
+
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
                 texto                       - Required : Texto obtido (String)
@@ -508,6 +551,7 @@ class ocr_functions():
 
             # Arguments
                 imagem_rgb                  - Required : Imagem para aplicação do ocr (Object)
+
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
                 retorno_ocr                 - Required : Retorno do OCR (String | Dict)
@@ -547,6 +591,9 @@ class ocr_functions():
         validador = ocr_functions.set_config_tesseract(self)
 
         validador, retorno_ocr = ocr_functions.orquestra_tipo_leitura_ocr(self, img_ocr)
+
+        if validador and self.tipo_retorno_ocr == "COMPLETO" and self.visualiza_ocr_completo:
+            ocr_functions.visualiza_bounding_box_ocr_completo(self, image=img_ocr, info_ocr=retorno_ocr)
 
         if validador is False:
             print("NÃO FOI POSSÍVEL APLICAR O OCR")

@@ -603,6 +603,5 @@ class Execute_OCR_RG(object):
                nome, nome_pai, nome_mae, \
                cidade_nasc, estado_nasc, cidade_origem, estado_origem
 
-
-
+        # RETORNANDO O RESULTADO OBTIDO
         return text_result_ocr, info_field

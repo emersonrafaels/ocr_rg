@@ -99,7 +99,7 @@ class Execute_Process_Data():
                 # FORMATANDO AS DATAS PARA FORMATO DATE
                 datas_format_date = [[convert_to_date(str(date_value[0]).upper(),
                                                      settings.DICT_MONTHS,
-                                                     settings.REGEX_ONLY_LETTERS), date_value[1]]
+                                                     settings.REGEX_ONLY_LETTERS)[0], date_value[1]]
                                      for date_value in datas_confidence_percent]
 
                 # ORDENANDO AS DATAS

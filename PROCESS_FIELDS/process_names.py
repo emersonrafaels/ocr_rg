@@ -603,6 +603,9 @@ class Execute_Process_Names():
                 else:
                     break
 
+            # FILTRANDO NOMES COM LEN MENOR DO QUE 2
+            result_names = [value for value in [[text[text.find(value[0]):].split("\n")[0], value[1], value[2]] for value in result_names] if len(value[0].split(" ")) > 1]
+
             # ORDENANDO A LISTA E OBTENDO OS 3 VALORES DE MAIOR PERCENTUAL
             result_names = order_list_with_arguments(list_values=result_names,
                                                      number_column_order=1,
@@ -611,58 +614,54 @@ class Execute_Process_Names():
             # OBTENDO OS VALORES DE NOME, NOME MÃE E NOME PAI
             if len(result_names) == 1:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = result_names[0][0]
 
                 # VERIFICANDO O GÊNERO
-                if result_names[0][-1] == "M":
+                if result_names[0][2] == "M":
 
-                    nome_pai = \
-                        text[text.find(result_names[0][0]):].split("\n")[0].split(" E ")[0]
+                    nome_pai = result_names[0][0].split(" E ")[0]
                     nome_mae = ""
 
                 else:
 
                     nome_pai = ""
-                    nome_mae = text[text.find(result_names[0][0]):].split("\n")[0]
+                    nome_mae = result_names[0][0]
 
             elif len(result_names) == 2:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = result_names[0][0]
 
                 text_ = " ".join([value for value in text.split("\n") if value !=
                                   [value_text for value_text in text.split("\n") if value_text.find(nome)!=-1][0]])
 
                 # VERIFICANDO O GÊNERO
-                if result_names[1][-1] == "M":
+                if result_names[1][2] == "M":
 
-                    nome_pai = \
-                        text_[text_.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
+                    nome_pai = text_[text_.find(result_names[1][0]).split()[0]:].split("\n")[0].split(" E ")[0]
                     nome_mae = ""
 
                 else:
 
                     nome_pai = ""
-                    nome_mae = text_[text.find(result_names[1][0]):].split("\n")[0]
+                    nome_mae = text_[text_.find(result_names[1][0]).split()[0]:].split("\n")[0]
 
             elif len(result_names) > 2:
 
-                nome = text[text.find(result_names[0][0]):].split("\n")[0]
+                nome = result_names[0][0]
 
                 text_ = "\n".join([value for value in text.split("\n") if value !=
                                   [value_text for value_text in text.split("\n") if value_text.find(nome) != -1][0]])
 
                 # VERIFICANDO O GÊNERO
-                if result_names[1][-1] == "M":
+                if result_names[1][2] == "M":
 
-                    nome_pai = \
-                        text_[text_.find(result_names[1][0]):].split("\n")[0].split(" E ")[0]
-                    nome_mae = text_[text_.find(result_names[2][0]):].split("\n")[0]
+                    nome_pai = text_[text_.find(result_names[1][0].split()[0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_[text_.find(result_names[2][0].split()[0]):].split("\n")[0]
 
                 else:
 
-                    nome_pai = \
-                        text_[text_.find(result_names[2][0]):].split("\n")[0].split(" E ")[0]
-                    nome_mae = text_[text_.find(result_names[1][0]):].split("\n")[0]
+                    nome_pai = text_[text_.find(result_names[2][0].split()[0]):].split("\n")[0].split(" E ")[0]
+                    nome_mae = text_[text_.find(result_names[1 ][0].split()[0]):].split("\n")[0]
 
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
