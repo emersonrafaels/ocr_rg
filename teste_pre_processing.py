@@ -12,7 +12,7 @@ image = read_image_gray(input_dir)
 info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
                          visualiza_ocr_completo=True).Orquestra_OCR(image)
 
-print(info_ocr)
+print(" ".join(info_ocr["text"].astype(str)))
 
 # VISUALIZANDO A IMAGEM INICIAL
 # image_view_functions.view_image(image)
@@ -23,11 +23,11 @@ functions_pre_processing.plot_histogram_image(image)
 # APLICANDO O THRESHOLD - BINARY
 val, thresh = functions_pre_processing.thresh_binary(image, 127)
 
+# VISUALIZANDO A IMAGEM THRESH - BINARY
+image_view_functions.view_image(thresh)
+
 # APLICANDO O OCR SOBRE A IMAGEM
 info_ocr = ocr_functions(type_return_ocr_input="COMPLETO",
                          visualiza_ocr_completo=True).Orquestra_OCR(thresh)
 
-print(info_ocr)
-
-# VISUALIZANDO O HISTOGRAMA DA IMAGEM THRESHOLD - BINARY
-image_view_functions.view_image(thresh)
+print(" ".join(info_ocr["text"].astype(str)))
