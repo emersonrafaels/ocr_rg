@@ -1,6 +1,6 @@
 from dynaconf import settings
 
-from UTILS.base64_encode_decode import base64_to_image
+from UTILS.base64_encode_decode import base64_to_image, isbase64
 from UTILS import generic_functions
 
 
@@ -19,7 +19,7 @@ def orchestra_get_files(input_file):
         CASO SEJA ENVIADO UM DIRETÓRIO.
 
         # Arguments
-            input_file                      - Required : Caminho do(s) arquivo(s) a serme lidos.
+            input_file                       - Required : Caminho do(s) arquivo(s) a serme lidos.
                                                           Pode ser enviado um Path (String) ou Base64 (String)
             input_type                      - Required : Tipo do input (String)
 
@@ -32,13 +32,16 @@ def orchestra_get_files(input_file):
     input_type = None
 
     # VERIFICANDO SE O ARGUMENTO ENVIADO É UMA BASE64
-    if type(input_file) == bytes:
+    validator_base64, result_base64 = isbase64(input_file)
+
+    if validator_base64:
+
         # O INPUT É UMA BASE64
         # CHAMA-SE AQ FUNÇÃO PARA DECODIFICAR A BASE64
 
         input_type = "BYTES"
 
-        return input_type, [base64_to_image(input_file)]
+        return input_type, base64_to_image(result_base64)
 
     # VERIFICANDO SE O ARGUMENTO ENVIADO É O CAMINHO DE UM ARQUIVO
     elif str(input_file).find(".") != -1:
@@ -46,7 +49,7 @@ def orchestra_get_files(input_file):
 
         input_type = "ARCHIVE"
 
-        return input_type, [input_file]
+        return input_type, input_file
 
     # VERIFICANDO SE O ARGUMENTO ENVIADO É UMA LISTA
     elif isinstance(input_file, list):

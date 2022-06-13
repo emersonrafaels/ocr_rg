@@ -46,7 +46,7 @@ class ocr_functions():
                                                                É possível passar um valor
                                                                específico de OEM. (String | Integer)
             tipo_retorno_ocr_input                - Optional : Tipo de retorno do ocr desejado (String)
-            tipo_output_type_image_data
+            tipo_output_type_image_data           - Optional : Tipo de formato do output do ocr completo (String)
         # Returns
             texto_ocr                             - Required : Texto obtido após aplicação da técnica de OCR (String)
 
@@ -218,7 +218,6 @@ class ocr_functions():
         # INICIANDO A VARIÁVEL DE OUTPUT DO IMAGE DATA
         valor_output_type_image_data = pytesseract.Output.DATAFRAME
 
-
         try:
             # VERIFICANDO SE O VALOR DE PSM E OEM ENCONTRA-SE DENTRE AS CONFIGS
             if valor_config_output_type_image_data == "DATAFRAME":
@@ -378,8 +377,13 @@ class ocr_functions():
                 list_result.append(str(string_atual).strip())
                 string_atual = ""
 
-        # FORMATANDO PARA RESULTADO EM FORMATO TEXTO
-        text_result = "\n".join(list_result)
+
+        if list_result:
+            # FORMATANDO PARA RESULTADO EM FORMATO TEXTO
+            text_result = "\n".join(list_result)
+        else:
+            # FORMATANDO PARA RESULTADO EM FORMATO TEXTO
+            text_result = "\n".join(string_atual)
 
         # RETORNANDO O RESULTADO DO OCR
         # LISTA CONTENDO CADA UM DOS TEXTOS
@@ -438,7 +442,7 @@ class ocr_functions():
 
 
             # Arguments
-                imagem                      - Required : Imagem para aplicação do ocr (Object)
+                image                       - Required : Imagem para aplicação do ocr (Object)
 
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
@@ -503,7 +507,7 @@ class ocr_functions():
         return validador, infos_ocr
 
 
-    def realizar_ocr(self, imagem_rgb):
+    def realizar_ocr(self, image):
 
         """
             REALIZA A APLICAÇÃO DE OCR SOBRE UMA IMAGEM.
@@ -511,7 +515,7 @@ class ocr_functions():
             CONVERSÃO IMAGEM PARA TEXTO.
 
             # Arguments
-                imagem_rgb                  - Required : Imagem para aplicação do ocr (Object)
+                image                       - Required : Imagem para aplicação do ocr (Object)
 
             # Returns
                 validador                   - Required : Validador de execução da função (Boolean)
@@ -526,7 +530,7 @@ class ocr_functions():
 
         try:
             # REALIZANDO O OCR SOBRE A IMAGEM
-            texto = pytesseract.image_to_string(imagem_rgb,
+            texto = pytesseract.image_to_string(image,
                                                 lang=self.lang_padrao,
                                                 config=self.config_tesseract_psm)
 

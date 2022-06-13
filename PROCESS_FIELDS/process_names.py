@@ -730,6 +730,8 @@ class Execute_Process_Names():
                 ind = text_wo_spaces.index(nome)
             else:
                 return nome
+        except ValueError:
+            return nome
         except Exception as ex:
             print("ERRO NA FUNÇÃO {} - {}".format(stack()[0][3], ex))
             return nome

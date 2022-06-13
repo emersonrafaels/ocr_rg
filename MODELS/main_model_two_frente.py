@@ -24,7 +24,7 @@ __data_atualizacao__ = "15/02/2022"
 from dynaconf import settings
 
 from PROCESSINGS.model_pre_processing import Image_Pre_Processing
-from model_ocr import Execute_OCR_RG
+from PROCESSINGS.model_ocr import Execute_OCR_RG
 from UTILS.image_read import read_image, read_image_gray
 from PROCESS_FIELDS.process_orgao_emissor import Execute_Orgao_Emissor
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
@@ -110,7 +110,3 @@ def main_model(dir_image):
         result_model.append(["", info_doc])
 
     return result_model
-
-
-image = r'C:\Users\Emerson\Desktop\brainIAcs\MASSA_IMAGENS\RG\Solange_Pereira_frente.png'
-main_model(image)

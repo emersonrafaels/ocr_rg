@@ -1,16 +1,18 @@
-import re
+from os import path
+from pathlib import Path
+import sys
 from inspect import stack
 
-from dynaconf import settings
-import unidecode
+sys.path.append(path.join(str(Path(__file__).resolve().parent.parent), "UTILS\\conectores_db"))
+sys.path.append(path.join(str(Path(__file__).resolve().parent.parent), "UTILS\\deep_check_orientation"))
 
-from UTILS.extract_infos import Extract_Infos
+from dynaconf import settings
+
 from PROCESSINGS.model_pos_processing import Pos_Processing_Fields
-from PROCESS_FIELDS.process_names import Execute_Process_Names
-from PROCESS_FIELDS.process_location import Execute_Process_Location
 from PROCESSINGS.model_pre_processing import Image_Pre_Processing
 from UTILS.image_ocr import ocr_functions
 from UTILS.image_read import read_image, read_image_gray
+from UTILS.orchestra_read_image import orchestra_get_files
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
 
 
@@ -86,13 +88,16 @@ class model_four():
                cidade_nasc, estado_nasc, cidade_origem, estado_origem
 
 
-def main_model(dir_image):
+def main_model(image):
 
     # INICIANDO A VARIÁVEL CONTENDO A LISTA DE IMAGENS A SER ENVIADA
     dict_images = {}
 
     # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO DO MODELO
     result_model = []
+
+    # ORQUESTRANDO A LEITURA DA IMAGEM (BASE64 OU FILE)
+    input_type, dir_image = orchestra_get_files(image)
 
     # REALIZANDO A LEITURA DA IMAGEM - RGB
     img_rgb = read_image(dir_image)

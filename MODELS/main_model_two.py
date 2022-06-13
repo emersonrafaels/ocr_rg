@@ -30,13 +30,20 @@ __author__ = """Emerson V. Rafael (EMERVIN)"""
 __data_atualizacao__ = "15/02/2022"
 
 
+from os import path
+from pathlib import Path
+import sys
 from inspect import stack
+
+sys.path.append(path.join(str(Path(__file__).resolve().parent.parent), "UTILS\\conectores_db"))
+sys.path.append(path.join(str(Path(__file__).resolve().parent.parent), "UTILS\\deep_check_orientation"))
 
 from dynaconf import settings
 
+from PROCESSINGS.model_ocr import Execute_OCR_RG
 from PROCESSINGS.model_pre_processing import Image_Pre_Processing
-from model_ocr import Execute_OCR_RG
 from UTILS.image_read import read_image, read_image_gray
+from UTILS.orchestra_read_image import orchestra_get_files
 from UTILS.deep_check_orientation.deep_check_orientation import check_orientation
 
 
@@ -66,13 +73,16 @@ def rotate_image(image):
     return image_rotate
 
 
-def main_model(dir_image):
+def main_model(image):
 
     # INICIANDO A VARIÁVEL CONTENDO A LISTA DE IMAGENS A SER ENVIADA
     dict_images = {}
 
     # INICIANDO A VARIÁVEL QUE ARMAZENARÁ O RESULTADO DO MODELO
     result_model = []
+
+    # ORQUESTRANDO A LEITURA DA IMAGEM (BASE64 OU FILE)
+    input_type, dir_image = orchestra_get_files(image)
 
     # REALIZANDO A LEITURA DA IMAGEM - RGB
     img_rgb = read_image(dir_image)
