@@ -116,25 +116,30 @@ def base64_to_image(file_base64):
 
     """
 
-    # FORMATANDO O NOME DE SAVE DO ARQUIVO PNG
-    built_image = os.path.join(os.getcwd(), "INPUT_BASE64.PNG")
+    built_image = None
 
-    # REALIZANDO A ABERTURA DE UM ARQUIVO (QUE SERÁ ESCRITO NA MÁQUINA)
-    with open(built_image, "wb") as image_base64:
+    try:
+        # DECODOFICANDO A BASE64
+        result_decode = base64.b64decode(file_base64.decode())
 
-        try:
-            # DECODOFICANDO A BASE64, ARMAZENANDO-O NO OBJETO ABERTO
-            # ESCREVENDO NA MÁQUINA
+        # OBTENDO A EXTENSÃO DO ARQUIVO
+        extension = base64_get_extension(result_decode)
 
-            result_decode = base64.b64decode(file_base64.decode())
+        # FORMATANDO O NOME DE SAVE
+        built_image = os.path.join(os.getcwd(), "{}{}".format("INPUT_BASE64", ".png"))
 
-            # OBTENDO A EXTENSÃO DO ARQUIVO
-            extension = base64_get_extension(result_decode)
+        # REALIZANDO A ABERTURA DE UM ARQUIVO (QUE SERÁ ESCRITO NA MÁQUINA)
+        with open(built_image, "wb") as image_base64:
 
-            image_base64.write(result_decode)
+            try:
+                # SALVANDO A IMAGEM DECODIFICADA
+                image_base64.write(result_decode)
 
-        except Exception as ex:
-            execute_log.error("ERRO NA FUNÇÃO {} - {]".format(stack()[0][3], ex))
+            except Exception as ex:
+                print("ERRO NA FUNÇÃO {} - {]".format(stack()[0][3], ex))
+
+    except Exception as ex:
+        print("ERRO NA FUNÇÃO {} - {]".format(stack()[0][3], ex))
 
     return built_image
 

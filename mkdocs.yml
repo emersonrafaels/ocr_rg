@@ -1,0 +1,44 @@
+site_name: DOCUMENTAÇÃO - OCR RG
+site_description: Documentação do projeto de OCR - RG
+site_author: Emerson V. Rafael
+repo_name: emersonrafaels/ocr_rg
+repo_url: https://github.com/emersonrafaels/ocr_rg
+
+nav:
+  - Home: index.md
+  - Modelos: models.md
+
+
+theme:
+    name: material
+    language: pt
+    logo: img/logo.ico
+    palette:
+      - scheme: default
+        primary: orange
+        toggle:
+          icon: material/weather-night
+          name: Modo noturno
+      - scheme: slate
+        primary: deep orange
+        toggle:
+          icon: material/weather-sunny
+          name: Modo claro
+
+markdown_extensions:
+  - pymdownx.tasklist  # Lista de tarefas
+  - pymdownx.emoji  # Emojis
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.progressbar
+  - pymdownx.b64
+
+extra:
+  disqus: dynaconf
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/emersonrafaels
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/emerson-rafael/
