@@ -36,7 +36,7 @@ markdown_extensions:
   - pymdownx.b64      # Usar base64
 
 extra:
-  disqus: dynaconf
+  disqus: ocr_rg
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/emersonrafaels
