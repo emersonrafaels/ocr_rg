@@ -28,12 +28,12 @@ theme:
 markdown_extensions:
   - pymdownx.tasklist  # Lista de tarefas
   - pymdownx.emoji  # Emojis
-  - pymdownx.mark
-  - pymdownx.tilde
-  - pymdownx.highlight
-  - pymdownx.superfences
-  - pymdownx.progressbar
-  - pymdownx.b64
+  - pymdownx.mark    # Realçado
+  - pymdownx.tilde   # Tachado
+  - pymdownx.highlight   # Highlight dos códigos
+  - pymdownx.superfences  # Usando o fences ```
+  - pymdownx.progressbar  # Barras de progresso
+  - pymdownx.b64      # Usar base64
 
 extra:
   disqus: dynaconf
