@@ -63,6 +63,7 @@ Werkzeug==2.0.2
 WTForms==2.3.3
 zipp==3.6.0
 mkdocs
+pymdown-extensions
 mkdocs-material
 mkdocstrings
 mkdocstrings-python
