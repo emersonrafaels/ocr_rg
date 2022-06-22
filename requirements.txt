@@ -42,7 +42,6 @@ pyparsing==2.4.7
 pytesseract==0.3.8
 pytest==6.2.5
 python-dateutil==2.8.2
-python-magic-bin==0.4.14
 pytz==2021.1
 PyWavelets==1.1.1
 PyYAML==5.4.1
@@ -67,3 +66,6 @@ pymdown-extensions
 mkdocs-material
 mkdocstrings
 mkdocstrings-python
+python-magic==0.4.13
+python-magic-win64==0.4.13
+pillow_heif==0.3.1
